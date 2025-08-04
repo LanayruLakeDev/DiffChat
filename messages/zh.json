@@ -139,7 +139,6 @@
     },
     "Thread": {
       "chat": "聊天",
-
       "renameChat": "重命名",
       "deleteChat": "删除聊天",
       "deleteUnarchivedChats": "删除所有未归档的聊天",
@@ -154,7 +153,6 @@
       "threadUpdated": "线程已更新",
       "areYouSureYouWantToDeleteThisChatThread": "您确定要删除此聊天线程吗？"
     },
-
     "ChatPreferences": {
       "title": "聊天偏好",
       "whatShouldWeCallYou": "我们应该怎么称呼您？",
@@ -180,6 +178,7 @@
   },
   "Layout": {
     "toggleSidebar": "切换侧边栏",
+    "browseAgents": "浏览代理",
     "newChat": "新聊天",
     "mcpConfiguration": "MCP 配置",
     "agents": "代理",
@@ -221,7 +220,6 @@
     "theme": "主题",
     "signOut": "登出",
     "language": "语言",
-
     "showAllChats": "查看所有聊天",
     "showLessChats": "显示更少",
     "reportAnIssue": "报告问题",
@@ -255,6 +253,33 @@
   "Agent": {
     "title": "智能体",
     "generatingAgent": "正在生成智能体...",
+    "browseTitle": "浏览代理",
+    "browseDescription": "发现并获取社区分享的代理",
+    "browseShareTip": "想要分享您自己的代理吗？编辑任何代理并在保存前切换\"公开代理\"。",
+    "myAgents": "我的代理",
+    "publicAgents": "公开代理",
+    "searchAgents": "搜索代理...",
+    "sortNewest": "最新优先",
+    "sortOldest": "最旧优先",
+    "sortName": "名称A-Z",
+    "sortPopular": "最受欢迎",
+    "noAgentsFound": "未找到代理",
+    "noPublicAgents": "暂无公开代理",
+    "adjustSearchTerms": "尝试调整您的搜索词或过滤器。",
+    "beFirstToShare": "成为第一个与社区分享代理的人！创建一个代理并设为公开。",
+    "agentsFound": "个代理",
+    "agentFound": "个代理",
+    "getAgent": "获取代理",
+    "gettingAgent": "获取中...",
+    "agentAddedToCollection": "代理已添加到您的收藏！",
+    "failedToGetAgent": "获取代理失败",
+    "timeAgo": {
+      "minutesAgo": "分钟前",
+      "hoursAgo": "小时前",
+      "daysAgo": "天前"
+    },
+    "failedToLoadAgents": "加载代理失败",
+    "failedToLoadAgentsDescription": "加载代理时出现错误。请稍后再试。",
     "agentNameAndIconLabel": "为您的智能体设置名称和图标。",
     "agentDescriptionLabel": "添加此智能体用途的简短描述。",
     "agentDescriptionPlaceholder": "这只是对智能体的描述，并不重要。",

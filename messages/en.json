@@ -240,7 +240,6 @@
     },
     "Thread": {
       "chat": "Chat",
-
       "renameChat": "Re Name",
       "deleteChat": "Delete Chat",
       "deleteUnarchivedChats": "Delete All Unarchived Chats",
@@ -255,7 +254,6 @@
       "threadUpdated": "Thread updated",
       "areYouSureYouWantToDeleteThisChatThread": "Are you sure you want to delete this Chat thread?"
     },
-
     "ChatPreferences": {
       "title": "Chat Preferences",
       "whatShouldWeCallYou": "What should we call you?",
@@ -281,6 +279,7 @@
   },
   "Layout": {
     "workflow": "Workflow",
+    "browseAgents": "Browse Agents",
     "toggleSidebar": "Toggle Sidebar",
     "newChat": "New Chat",
     "mcpConfiguration": "MCP Configuration",
@@ -323,7 +322,6 @@
     "theme": "Theme",
     "signOut": "Sign out",
     "language": "Language",
-
     "showAllChats": "View All Chats",
     "showLessChats": "Show less",
     "reportAnIssue": "Report an issue",
@@ -356,6 +354,33 @@
   "Agent": {
     "title": "Agent",
     "generatingAgent": "Generating Agent...",
+    "browseTitle": "Browse Agents",
+    "browseDescription": "Discover and get agents shared by the community",
+    "browseShareTip": "Want to share your own agent? Edit any of your agents and toggle \"Public Agent\" before saving.",
+    "myAgents": "My Agents",
+    "publicAgents": "Public Agents",
+    "searchAgents": "Search agents...",
+    "sortNewest": "Newest first",
+    "sortOldest": "Oldest first",
+    "sortName": "Name A-Z",
+    "sortPopular": "Most popular",
+    "noAgentsFound": "No agents found",
+    "noPublicAgents": "No public agents yet",
+    "adjustSearchTerms": "Try adjusting your search terms or filters.",
+    "beFirstToShare": "Be the first to share an agent with the community! Create an agent and make it public.",
+    "agentsFound": "agents found",
+    "agentFound": "agent found",
+    "getAgent": "Get Agent",
+    "gettingAgent": "Getting...",
+    "agentAddedToCollection": "Agent added to your collection!",
+    "failedToGetAgent": "Failed to get agent",
+    "timeAgo": {
+      "minutesAgo": "m ago",
+      "hoursAgo": "h ago",
+      "daysAgo": "d ago"
+    },
+    "failedToLoadAgents": "Failed to load agents",
+    "failedToLoadAgentsDescription": "There was an error loading the agents. Please try again later.",
     "agentNameAndIconLabel": "Give your agent a name and icon.",
     "agentDescriptionLabel": "Add a brief description of what this agent does.",
     "agentDescriptionPlaceholder": "This is just a description of the agent, it's not critical.",

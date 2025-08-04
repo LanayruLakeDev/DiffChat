@@ -11,6 +11,7 @@ export const AgentUpsertSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1).max(100),
   description: z.string().max(8000).optional(),
+  isPublic: z.boolean().optional().default(false),
   icon: z
     .object({
       type: z.literal("emoji"),
@@ -31,6 +32,7 @@ export type Agent = {
   description?: string;
   icon?: AgentIcon;
   userId: string;
+  isPublic?: boolean;
   instructions: {
     role?: string;
     systemPrompt?: string;
@@ -53,7 +55,7 @@ export type AgentRepository = {
     id: string,
     userId: string,
     agent: Partial<
-      Pick<Agent, "name" | "description" | "icon" | "instructions">
+      Pick<Agent, "name" | "description" | "icon" | "instructions" | "isPublic">
     >,
   ): Promise<Agent>;
 
@@ -62,6 +64,10 @@ export type AgentRepository = {
   ): Promise<Agent>;
 
   deleteAgent(id: string, userId: string): Promise<void>;
+
+  selectPublicAgents(): Promise<(Omit<Agent, "instructions"> & { creatorName: string })[]>;
+
+  selectPublicAgentById(id: string): Promise<Agent | null>;
 };
 
 export const AgentGenerateSchema = z.object({

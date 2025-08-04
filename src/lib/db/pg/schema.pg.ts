@@ -46,6 +46,7 @@ export const AgentSchema = pgTable("agent", {
   userId: uuid("user_id")
     .notNull()
     .references(() => UserSchema.id),
+  isPublic: boolean("is_public").notNull().default(false),
   instructions: json("instructions").$type<Agent["instructions"]>(),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),

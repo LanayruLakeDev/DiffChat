@@ -1,6 +1,6 @@
 import { Agent, AgentRepository } from "app-types/agent";
 import { pgDb as db } from "../db.pg";
-import { AgentSchema } from "../schema.pg";
+import { AgentSchema, UserSchema } from "../schema.pg";
 import { and, desc, eq } from "drizzle-orm";
 import { generateUUID } from "lib/utils";
 
@@ -14,6 +14,7 @@ export const pgAgentRepository: AgentRepository = {
         description: agent.description,
         icon: agent.icon,
         userId: agent.userId,
+        isPublic: agent.isPublic ?? false,
         instructions: agent.instructions,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -38,6 +39,7 @@ export const pgAgentRepository: AgentRepository = {
         description: AgentSchema.description,
         icon: AgentSchema.icon,
         userId: AgentSchema.userId,
+        isPublic: AgentSchema.isPublic,
         createdAt: AgentSchema.createdAt,
         updatedAt: AgentSchema.updatedAt,
       })
@@ -68,6 +70,7 @@ export const pgAgentRepository: AgentRepository = {
         description: agent.description,
         icon: agent.icon,
         userId: agent.userId,
+        isPublic: agent.isPublic ?? false,
         instructions: agent.instructions,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -78,6 +81,7 @@ export const pgAgentRepository: AgentRepository = {
           name: agent.name,
           description: agent.description,
           icon: agent.icon,
+          isPublic: agent.isPublic ?? false,
           instructions: agent.instructions,
           updatedAt: new Date(),
         },
@@ -90,5 +94,33 @@ export const pgAgentRepository: AgentRepository = {
     await db
       .delete(AgentSchema)
       .where(and(eq(AgentSchema.id, id), eq(AgentSchema.userId, userId)));
+  },
+
+  async selectPublicAgents() {
+    const results = await db
+      .select({
+        id: AgentSchema.id,
+        name: AgentSchema.name,
+        description: AgentSchema.description,
+        icon: AgentSchema.icon,
+        userId: AgentSchema.userId,
+        isPublic: AgentSchema.isPublic,
+        createdAt: AgentSchema.createdAt,
+        updatedAt: AgentSchema.updatedAt,
+        creatorName: UserSchema.name,
+      })
+      .from(AgentSchema)
+      .innerJoin(UserSchema, eq(AgentSchema.userId, UserSchema.id))
+      .where(eq(AgentSchema.isPublic, true))
+      .orderBy(desc(AgentSchema.updatedAt));
+    return results;
+  },
+
+  async selectPublicAgentById(id: string) {
+    const [result] = await db
+      .select()
+      .from(AgentSchema)
+      .where(and(eq(AgentSchema.id, id), eq(AgentSchema.isPublic, true)));
+    return result as Agent | null;
   },
 };

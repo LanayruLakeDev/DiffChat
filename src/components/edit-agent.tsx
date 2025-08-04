@@ -47,6 +47,8 @@ import {
 import useSWR, { mutate } from "swr";
 import { Skeleton } from "ui/skeleton";
 import { safe } from "ts-safe";
+import { Switch } from "ui/switch";
+import { Label } from "ui/label";
 import { handleErrorWithToast } from "ui/shared-toast";
 import { appStore } from "@/app/store";
 
@@ -75,6 +77,7 @@ const defaultConfig = (): PartialBy<
   return {
     name: "",
     description: "",
+    isPublic: false,
     icon: {
       type: "emoji",
       value:
@@ -647,8 +650,22 @@ export default function EditAgent({ id }: { id?: string }) {
           </div>
         </div>
         <div
-          className={cn("flex justify-end", isStoredAgentLoading && "hidden")}
+          className={cn("flex justify-between items-center", isStoredAgentLoading && "hidden")}
         >
+          {/* Visibility Toggle - LEFT SIDE */}
+          <div className="flex items-center gap-2">
+            <Switch
+              id="agent-visibility"
+              checked={agent.isPublic ?? false}
+              onCheckedChange={(checked) => setAgent({ isPublic: checked })}
+              disabled={isLoading}
+            />
+            <Label htmlFor="agent-visibility" className="text-sm">
+              {agent.isPublic ? "Public Agent" : "Private Agent"}
+            </Label>
+          </div>
+          
+          {/* Save Button - RIGHT SIDE */}
           <Button className="mt-2" onClick={saveAgent} disabled={isLoading}>
             {isSaving ? t("Common.saving") : t("Common.save")}
             {isSaving && <Loader className="size-4 animate-spin" />}

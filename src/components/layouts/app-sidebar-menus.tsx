@@ -23,6 +23,7 @@ import {
   FolderSearchIcon,
   PlusIcon,
   Waypoints,
+  Users,
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Skeleton } from "ui/skeleton";
@@ -93,6 +94,18 @@ export function AppSidebarMenus() {
                 <SidebarMenuButton className="font-semibold">
                   <Waypoints className="size-4" />
                   {t("Layout.workflow")}
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          </Tooltip>
+        </SidebarMenu>
+        <SidebarMenu>
+          <Tooltip>
+            <SidebarMenuItem>
+              <Link href="/agent/browse">
+                <SidebarMenuButton className="font-semibold">
+                  <Users className="size-4" />
+                  {t("Layout.browseAgents")}
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>

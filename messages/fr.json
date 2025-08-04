@@ -138,7 +138,6 @@
     },
     "Thread": {
       "chat": "Chat",
-
       "renameChat": "Renommer",
       "deleteChat": "Supprimer le Chat",
       "deleteUnarchivedChats": "Supprimer Tous les Chats Non Archivés",
@@ -153,7 +152,6 @@
       "threadUpdated": "Fil mis à jour",
       "areYouSureYouWantToDeleteThisChatThread": "Êtes-vous sûr de vouloir supprimer ce fil de chat ?"
     },
-
     "ChatPreferences": {
       "title": "Préférences de Chat",
       "whatShouldWeCallYou": "Comment devrions-nous vous appeler ?",
@@ -178,7 +176,9 @@
     }
   },
   "Layout": {
+    "workflow": "Flux de Travail",
     "toggleSidebar": "Basculer la Barre Latérale",
+    "browseAgents": "Parcourir les Agents",
     "newChat": "Nouveau Chat",
     "mcpConfiguration": "Configuration MCP",
     "agents": "Agents",
@@ -220,7 +220,6 @@
     "theme": "Thème",
     "signOut": "Se déconnecter",
     "language": "Langue",
-
     "showAllChats": "Voir Tous les Chats",
     "showLessChats": "Afficher moins",
     "reportAnIssue": "Signaler un problème",
@@ -254,6 +253,33 @@
   "Agent": {
     "title": "Agent",
     "generatingAgent": "Génération de l'Agent...",
+    "browseTitle": "Parcourir les Agents",
+    "browseDescription": "Découvrez et obtenez des agents partagés par la communauté",
+    "browseShareTip": "Vous voulez partager votre propre agent ? Modifiez n'importe lequel de vos agents et activez \"Agent Public\" avant de sauvegarder.",
+    "myAgents": "Mes Agents",
+    "publicAgents": "Agents Publics",
+    "searchAgents": "Rechercher des agents...",
+    "sortNewest": "Plus récents d'abord",
+    "sortOldest": "Plus anciens d'abord",
+    "sortName": "Nom A-Z",
+    "sortPopular": "Plus populaires",
+    "noAgentsFound": "Aucun agent trouvé",
+    "noPublicAgents": "Aucun agent public pour le moment",
+    "adjustSearchTerms": "Essayez d'ajuster vos termes de recherche ou filtres.",
+    "beFirstToShare": "Soyez le premier à partager un agent avec la communauté ! Créez un agent et rendez-le public.",
+    "agentsFound": "agents trouvés",
+    "agentFound": "agent trouvé",
+    "getAgent": "Obtenir l'Agent",
+    "gettingAgent": "Obtention...",
+    "agentAddedToCollection": "Agent ajouté à votre collection !",
+    "failedToGetAgent": "Échec de l'obtention de l'agent",
+    "timeAgo": {
+      "minutesAgo": "min",
+      "hoursAgo": "h",
+      "daysAgo": "j"
+    },
+    "failedToLoadAgents": "Échec du chargement des agents",
+    "failedToLoadAgentsDescription": "Il y a eu une erreur lors du chargement des agents. Veuillez réessayer plus tard.",
     "agentNameAndIconLabel": "Donnez un nom et une icône à votre agent.",
     "agentDescriptionLabel": "Ajoutez une brève description de ce que fait cet agent.",
     "agentDescriptionPlaceholder": "Ceci n'est qu'une description de l'agent, ce n'est pas critique.",
