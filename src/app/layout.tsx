@@ -18,9 +18,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "better-chatbot",
+  title: "Luminar AI",
   description:
-    "Better Chatbot is a chatbot that uses the Tools to answer questions.",
+    "Luminar AI is an intelligent assistant that illuminates your conversations with advanced tools and insights.",
 };
 
 // const themes = BASE_THEMES.flatMap((t) => [t, `${t}-dark`]);

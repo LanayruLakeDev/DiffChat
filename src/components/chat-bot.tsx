@@ -201,19 +201,27 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
     [messages.length, error],
   );
 
-  const [lightOpacity, setLightOpacity] = useState(1); // Start visible for home
+  const [lightOpacity, setLightOpacity] = useState(0); // Start hidden for smooth fade-in
 
   // Smart fade-in: always visible on home, interaction-based in chat
   useEffect(() => {
     if (emptyMessage) {
-      // Home page: always visible
-      setLightOpacity(1);
+      // Home page: smooth fade-in after component mounts
+      const timer = setTimeout(() => {
+        setLightOpacity(1);
+      }, 500); // 500ms delay before fade-in starts
+      return () => clearTimeout(timer);
     } else {
       // Chat page: start with first-time behavior
-      setLightOpacity(isFirstTime ? 1 : 0);
       if (isFirstTime) {
-        // If first time, keep visible initially
-        return;
+        // First time: smooth fade-in
+        const timer = setTimeout(() => {
+          setLightOpacity(1);
+        }, 1000); // 1 second delay for first visit
+        return () => clearTimeout(timer);
+      } else {
+        // Returning user: start hidden, wait for idle
+        setLightOpacity(0);
       }
     }
   }, [emptyMessage]);
