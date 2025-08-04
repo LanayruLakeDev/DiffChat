@@ -48,7 +48,6 @@ import useSWR, { mutate } from "swr";
 import { Skeleton } from "ui/skeleton";
 import { safe } from "ts-safe";
 import { Switch } from "ui/switch";
-import { Label } from "ui/label";
 import { handleErrorWithToast } from "ui/shared-toast";
 import { appStore } from "@/app/store";
 
