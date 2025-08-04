@@ -100,23 +100,6 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
     threadId,
   });
 
-  const [lightOpacity, setLightOpacity] = useState(1); // Start visible for home
-
-  // Smart fade-in: always visible on home, interaction-based in chat
-  useEffect(() => {
-    if (emptyMessage) {
-      // Home page: always visible
-      setLightOpacity(1);
-    } else {
-      // Chat page: start with first-time behavior
-      setLightOpacity(isFirstTime ? 1 : 0);
-      if (isFirstTime) {
-        // If first time, keep visible initially
-        return;
-      }
-    }
-  }, [emptyMessage]);
-
   const {
     messages,
     input,
@@ -217,6 +200,23 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
     () => messages.length === 0 && !error,
     [messages.length, error],
   );
+
+  const [lightOpacity, setLightOpacity] = useState(1); // Start visible for home
+
+  // Smart fade-in: always visible on home, interaction-based in chat
+  useEffect(() => {
+    if (emptyMessage) {
+      // Home page: always visible
+      setLightOpacity(1);
+    } else {
+      // Chat page: start with first-time behavior
+      setLightOpacity(isFirstTime ? 1 : 0);
+      if (isFirstTime) {
+        // If first time, keep visible initially
+        return;
+      }
+    }
+  }, [emptyMessage]);
 
   const isInitialThreadEntry = useMemo(
     () =>
