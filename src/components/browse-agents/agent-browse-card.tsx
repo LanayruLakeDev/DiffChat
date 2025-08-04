@@ -11,37 +11,7 @@ import { fetcher } from "lib/utils";
 import { toast } from "sonner";
 import { mutate } from "swr";
 import Link from "next/link";
-
-type PublicAgent = {
-  id: string;
-  name: string;
-  description?: string;
-  icon?: {
-    type: "emoji";
-    value: string;
-    style?: Record<string, string>;
-  };
-  userId: string;
-  isPublic?: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  creatorName: string;
-};
-
-type MyAgent = {
-  id: string;
-  name: string;
-  description?: string;
-  icon?: {
-    type: "emoji";
-    value: string;
-    style?: Record<string, string>;
-  };
-  userId: string;
-  isPublic?: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-};
+import { PublicAgent, MyAgent } from "./types";
 
 interface AgentBrowseCardProps {
   agent: PublicAgent | MyAgent;

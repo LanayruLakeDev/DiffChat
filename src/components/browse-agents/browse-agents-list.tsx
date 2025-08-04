@@ -9,37 +9,7 @@ import { AlertCircle, Users, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "ui/tabs";
 import { useAgents } from "@/hooks/queries/use-agents";
-
-type PublicAgent = {
-  id: string;
-  name: string;
-  description?: string;
-  icon?: {
-    type: "emoji";
-    value: string;
-    style?: Record<string, string>;
-  };
-  userId: string;
-  isPublic?: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  creatorName: string;
-};
-
-type MyAgent = {
-  id: string;
-  name: string;
-  description?: string;
-  icon?: {
-    type: "emoji";
-    value: string;
-    style?: Record<string, string>;
-  };
-  userId: string;
-  isPublic?: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-};
+import { PublicAgent, MyAgent } from "./types";
 
 export function BrowseAgentsList() {
   const t = useTranslations();
