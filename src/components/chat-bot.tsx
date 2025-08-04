@@ -100,7 +100,22 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
     threadId,
   });
 
-  const [showParticles, setShowParticles] = useState(isFirstTime);
+  const [lightOpacity, setLightOpacity] = useState(1); // Start visible for home
+
+  // Smart fade-in: always visible on home, interaction-based in chat
+  useEffect(() => {
+    if (emptyMessage) {
+      // Home page: always visible
+      setLightOpacity(1);
+    } else {
+      // Chat page: start with first-time behavior
+      setLightOpacity(isFirstTime ? 1 : 0);
+      if (isFirstTime) {
+        // If first time, keep visible initially
+        return;
+      }
+    }
+  }, [emptyMessage]);
 
   const {
     messages,
@@ -268,9 +283,12 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
   }, [isLoading, messages.at(-1)]);
 
   const particle = useMemo(() => {
-    if (!showParticles) return;
+    // Always render, but control with opacity
     return (
-      <>
+      <div 
+        className="absolute top-0 left-0 w-full h-full transition-opacity duration-2000 ease-in-out" 
+        style={{ opacity: lightOpacity }}
+      >
         <div className="absolute top-0 left-0 w-full h-full z-10 fade-in animate-in duration-5000">
           <LightRays />
         </div>
@@ -287,14 +305,20 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
         <div className="absolute top-0 left-0 w-full h-full z-10 fade-in animate-in duration-5000">
           <div className="w-full h-full bg-gradient-to-r from-background to-20% to-transparent z-20" />
         </div>
-      </>
+      </div>
     );
-  }, [showParticles]);
+  }, [lightOpacity]);
 
   const handleFocus = useCallback(() => {
-    setShowParticles(false);
-    debounce(() => setShowParticles(true), 30000);
-  }, []);
+    // Only hide light effects when NOT on home page
+    if (emptyMessage) return; // Home page: do nothing
+    
+    // Chat page: smooth fade out and restart idle timer
+    setLightOpacity(0);
+    debounce(() => {
+      setLightOpacity(1);
+    }, 30000); // 30 seconds idle
+  }, [emptyMessage]);
 
   useEffect(() => {
     appStoreMutate({ currentThreadId: threadId });
@@ -338,10 +362,11 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
   }, []);
 
   useEffect(() => {
-    if (mounted) {
+    if (mounted && !emptyMessage) {
+      // Only trigger handleFocus in chat, not on home
       handleFocus();
     }
-  }, [input]);
+  }, [input, mounted, emptyMessage, handleFocus]);
 
   return (
     <>
@@ -363,7 +388,7 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
             <div
               className={"flex flex-col gap-2 overflow-y-auto py-6 z-10"}
               ref={containerRef}
-              onScroll={handleFocus}
+              onScroll={emptyMessage ? undefined : handleFocus} // Only trigger in chat
             >
               {messages.map((message, index) => {
                 const isLastMessage = messages.length - 1 === index;
@@ -423,7 +448,7 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
             onThinkingChange={handleThinkingChange}
             isLoading={isLoading || isPendingToolCall}
             onStop={stop}
-            onFocus={isFirstTime ? undefined : handleFocus}
+            onFocus={emptyMessage ? undefined : handleFocus} // Only trigger in chat
           />
           {slots?.inputBottomSlot}
         </div>
