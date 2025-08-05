@@ -1,6 +1,20 @@
 import { Agent, AgentRepository } from "app-types/agent";
 import { pgDb as db } from "../db.pg";
-import { AgentSchema, UserSchema } from "../schema.pg";
+import { AgentSchema, UserSchem  async selectPublicAgentById(id: string) {
+    const [result] = await db
+      .select()
+      .from(AgentSchema)
+      .where(and(eq(AgentSchema.id, id), eq(AgentSchema.isPublic, true)));      
+    
+    if (!result) return null;
+    
+    // Convert null values to undefined to match Agent type
+    return {
+      ...result,
+      description: result.description ?? undefined,
+      icon: result.icon ?? undefined,
+    } as Agent;
+  },m "../schema.pg";
 import { and, desc, eq } from "drizzle-orm";
 import { generateUUID } from "lib/utils";
 
@@ -46,7 +60,13 @@ export const pgAgentRepository: AgentRepository = {
       .from(AgentSchema)
       .where(eq(AgentSchema.userId, userId))
       .orderBy(desc(AgentSchema.updatedAt));
-    return results as Omit<Agent, "instructions">[];
+    
+    // Convert null values to undefined to match Agent type
+    return results.map(result => ({
+      ...result,
+      description: result.description ?? undefined,
+      icon: result.icon ?? undefined,
+    })) as Omit<Agent, "instructions">[];
   },
 
   async updateAgent(id, userId, agent) {
@@ -113,7 +133,13 @@ export const pgAgentRepository: AgentRepository = {
       .innerJoin(UserSchema, eq(AgentSchema.userId, UserSchema.id))
       .where(eq(AgentSchema.isPublic, true))
       .orderBy(desc(AgentSchema.updatedAt));
-    return results;
+    
+    // Convert null values to undefined to match Agent type
+    return results.map(result => ({
+      ...result,
+      description: result.description ?? undefined,
+      icon: result.icon ?? undefined,
+    }));
   },
 
   async selectPublicAgentById(id: string) {
