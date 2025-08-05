@@ -9,7 +9,7 @@ import { AlertCircle, Users, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "ui/tabs";
 import { useAgents } from "@/hooks/queries/use-agents";
-import { PublicAgent, MyAgent } from "./types";
+import { PublicAgent } from "./types";
 
 export function BrowseAgentsList() {
   const t = useTranslations();

@@ -11,10 +11,10 @@ import { fetcher } from "lib/utils";
 import { toast } from "sonner";
 import { mutate } from "swr";
 import Link from "next/link";
-import { PublicAgent, MyAgent } from "./types";
+import { PublicAgent, BrowseAgent } from "./types";
 
 interface AgentBrowseCardProps {
-  agent: PublicAgent | MyAgent;
+  agent: BrowseAgent;
   isOwner: boolean;
 }
 
