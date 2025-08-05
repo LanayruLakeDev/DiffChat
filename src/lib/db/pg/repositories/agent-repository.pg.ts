@@ -46,13 +46,7 @@ export const pgAgentRepository: AgentRepository = {
       .from(AgentSchema)
       .where(eq(AgentSchema.userId, userId))
       .orderBy(desc(AgentSchema.updatedAt));
-    
-    // Convert null values to undefined to match Agent type
-    return results.map(result => ({
-      ...result,
-      description: result.description ?? undefined,
-      icon: result.icon ?? undefined,
-    })) as Omit<Agent, "instructions">[];
+    return results as Omit<Agent, "instructions">[];
   },
 
   async updateAgent(id, userId, agent) {
@@ -119,13 +113,7 @@ export const pgAgentRepository: AgentRepository = {
       .innerJoin(UserSchema, eq(AgentSchema.userId, UserSchema.id))
       .where(eq(AgentSchema.isPublic, true))
       .orderBy(desc(AgentSchema.updatedAt));
-    
-    // Convert null values to undefined to match Agent type
-    return results.map(result => ({
-      ...result,
-      description: result.description ?? undefined,
-      icon: result.icon ?? undefined,
-    }));
+    return results;
   },
 
   async selectPublicAgentById(id: string) {
@@ -133,14 +121,6 @@ export const pgAgentRepository: AgentRepository = {
       .select()
       .from(AgentSchema)
       .where(and(eq(AgentSchema.id, id), eq(AgentSchema.isPublic, true)));
-    
-    if (!result) return null;
-    
-    // Convert null values to undefined to match Agent type
-    return {
-      ...result,
-      description: result.description ?? undefined,
-      icon: result.icon ?? undefined,
-    } as Agent;
+    return result as Agent | null;
   },
 };
