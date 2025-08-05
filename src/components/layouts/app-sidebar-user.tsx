@@ -136,7 +136,7 @@ export function AppSidebarUser({
             <DropdownMenuItem
               onClick={() => {
                 window.open(
-                  "https://github.com/cgoinglove/better-chatbot/issues/new",
+                  "https://github.com/luminar-ai/luminar-ai/issues/new",
                   "_blank",
                 );
               }}

@@ -108,7 +108,7 @@ export class MCPClient {
       this.locker.lock();
 
       const client = new Client({
-        name: "better-chatbot",
+        name: "luminar-ai",
         version: "1.0.0",
       });
 
