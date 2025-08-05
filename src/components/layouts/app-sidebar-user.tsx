@@ -136,7 +136,7 @@ export function AppSidebarUser({
             <DropdownMenuItem
               onClick={() => {
                 window.open(
-                  "https://github.com/luminar-ai/luminar-ai/issues/new",
+                  "https://github.com/LanayruLakeDev/Luminar-AI/issues/new",
                   "_blank",
                 );
               }}
