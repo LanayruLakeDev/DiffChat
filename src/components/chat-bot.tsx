@@ -301,7 +301,7 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
           <LightRays />
         </div>
         <div className="absolute top-0 left-0 w-full h-full z-10 fade-in animate-in duration-5000">
-          <Particles particleCount={200} particleBaseSize={5} />
+          <Particles particleCount={50} particleBaseSize={2} />
         </div>
 
         <div className="absolute top-0 left-0 w-full h-full z-10 fade-in animate-in duration-5000">
