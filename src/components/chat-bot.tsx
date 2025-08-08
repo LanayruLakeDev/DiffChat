@@ -299,6 +299,26 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
   const [rayLength, setRayLength] = useState(2);
   const [fadeDistance, setFadeDistance] = useState(1);
   const [saturation, setSaturation] = useState(1);
+  const [showDebug, setShowDebug] = useState(false);
+
+  useEffect(() => {
+    const keysPressed: { [key: string]: boolean } = {};
+    const handleKeyDown = (e: KeyboardEvent) => {
+      keysPressed[e.key] = true;
+      if (keysPressed["p"] && keysPressed["m"]) {
+        setShowDebug((prev) => !prev);
+      }
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+      keysPressed[e.key] = false;
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
 
   const particle = useMemo(() => {
     const particleCount = emptyMessage
@@ -503,7 +523,7 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
           onClose={() => setIsDeleteThreadPopupOpen(false)}
           open={isDeleteThreadPopupOpen}
         />
-        {isPortrait && !emptyMessage && (
+        {showDebug && !emptyMessage && (
           <DebugSlider
             intensity={intensity}
             onIntensityChange={(e) => setIntensity(parseFloat(e.target.value))}

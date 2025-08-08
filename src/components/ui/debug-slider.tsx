@@ -30,9 +30,12 @@ export const DebugSlider: React.FC<DebugSliderProps> = ({
   return (
     <div className="fixed bottom-4 right-4 z-50 bg-gray-800 bg-opacity-50 p-4 rounded-lg">
       <div className="mb-4">
-        <label htmlFor="intensity" className="block text-white text-sm font-bold mb-2">
-          Particle Intensity
-        </label>
+        <div className="flex justify-between">
+          <label htmlFor="intensity" className="block text-white text-sm font-bold mb-2">
+            Particle Intensity
+          </label>
+          <span className="text-white text-sm">{intensity.toFixed(1)}</span>
+        </div>
         <input
           type="range"
           id="intensity"
@@ -46,9 +49,12 @@ export const DebugSlider: React.FC<DebugSliderProps> = ({
         />
       </div>
       <div className="mb-4">
-        <label htmlFor="lightSpread" className="block text-white text-sm font-bold mb-2">
-          Light Spread
-        </label>
+        <div className="flex justify-between">
+          <label htmlFor="lightSpread" className="block text-white text-sm font-bold mb-2">
+            Light Spread
+          </label>
+          <span className="text-white text-sm">{lightSpread.toFixed(1)}</span>
+        </div>
         <input
           type="range"
           id="lightSpread"
@@ -62,9 +68,12 @@ export const DebugSlider: React.FC<DebugSliderProps> = ({
         />
       </div>
       <div className="mb-4">
-        <label htmlFor="rayLength" className="block text-white text-sm font-bold mb-2">
-          Ray Length
-        </label>
+        <div className="flex justify-between">
+          <label htmlFor="rayLength" className="block text-white text-sm font-bold mb-2">
+            Ray Length
+          </label>
+          <span className="text-white text-sm">{rayLength.toFixed(1)}</span>
+        </div>
         <input
           type="range"
           id="rayLength"
@@ -78,9 +87,12 @@ export const DebugSlider: React.FC<DebugSliderProps> = ({
         />
       </div>
       <div className="mb-4">
-        <label htmlFor="fadeDistance" className="block text-white text-sm font-bold mb-2">
-          Fade Distance
-        </label>
+        <div className="flex justify-between">
+          <label htmlFor="fadeDistance" className="block text-white text-sm font-bold mb-2">
+            Fade Distance
+          </label>
+          <span className="text-white text-sm">{fadeDistance.toFixed(1)}</span>
+        </div>
         <input
           type="range"
           id="fadeDistance"
@@ -94,9 +106,12 @@ export const DebugSlider: React.FC<DebugSliderProps> = ({
         />
       </div>
       <div>
-        <label htmlFor="saturation" className="block text-white text-sm font-bold mb-2">
-          Saturation
-        </label>
+        <div className="flex justify-between">
+          <label htmlFor="saturation" className="block text-white text-sm font-bold mb-2">
+            Saturation
+          </label>
+          <span className="text-white text-sm">{saturation.toFixed(1)}</span>
+        </div>
         <input
           type="range"
           id="saturation"
