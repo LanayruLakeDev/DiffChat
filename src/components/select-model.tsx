@@ -20,16 +20,6 @@ import {
 import { GeminiIcon } from "ui/gemini-icon";
 import { GrokIcon } from "ui/grok-icon";
 import { OpenAIIcon } from "ui/openai-icon";
-import { QwenIcon } from "ui/qwen-icon";
-import { MetaIcon } from "ui/meta-icon";
-import { DeepSeekIcon } from "ui/deepseek-icon";
-import { MistralIcon } from "ui/mistral-icon";
-import { MicrosoftIcon } from "ui/microsoft-icon";
-import { NousResearchIcon } from "ui/nousresearch-icon";
-import { SophosympatheiIcon } from "ui/sophosympatheia-icon";
-import { TngTechIcon } from "ui/tngtech-icon";
-import { XAIIcon } from "ui/xai-icon";
-import { GithubProviderIcon } from "ui/github-provider-icon";
 import { Popover, PopoverContent, PopoverTrigger } from "ui/popover";
 
 interface SelectModelProps {
@@ -142,26 +132,6 @@ function ProviderIcon({
     <ClaudeIcon className={className} />
   ) : provider === "google" ? (
     <GeminiIcon className={className} />
-  ) : provider === "qwen" ? (
-    <QwenIcon className={className} />
-  ) : provider === "meta" ? (
-    <MetaIcon className={className} />
-  ) : provider === "deepseek" ? (
-    <DeepSeekIcon className={className} />
-  ) : provider === "mistral" ? (
-    <MistralIcon className={className} />
-  ) : provider === "microsoft" ? (
-    <MicrosoftIcon className={className} />
-  ) : provider === "nousresearch" ? (
-    <NousResearchIcon className={className} />
-  ) : provider === "sophosympatheia" ? (
-    <SophosympatheiIcon className={className} />
-  ) : provider === "tngtech" ? (
-    <TngTechIcon className={className} />
-  ) : provider === "x-ai" ? (
-    <XAIIcon className={className} />
-  ) : provider === "github" ? (
-    <GithubProviderIcon className={className} />
   ) : null;
 }
 
