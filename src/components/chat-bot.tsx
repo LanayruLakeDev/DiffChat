@@ -47,6 +47,7 @@ import { useGenerateThreadTitle } from "@/hooks/queries/use-generate-thread-titl
 import dynamic from "next/dynamic";
 import { useMounted } from "@/hooks/use-mounted";
 import { useWindowSize } from "@/hooks/use-window-size";
+import { DebugSlider } from "ui/debug-slider";
 
 type Props = {
   threadId: string;
@@ -293,17 +294,18 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
 
   const { width, height } = useWindowSize();
   const isPortrait = height > width;
+  const [intensity, setIntensity] = useState(1);
 
   const particle = useMemo(() => {
     const particleCount = emptyMessage
       ? 400
       : isPortrait
-      ? 200
+      ? 200 * intensity
       : 400;
     const particleBaseSize = emptyMessage
       ? 10
       : isPortrait
-      ? 5
+      ? 5 * intensity
       : 10;
 
     // Always render, but control with opacity
@@ -333,7 +335,7 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
         </div>
       </div>
     );
-  }, [lightOpacity, isPortrait, emptyMessage]);
+  }, [lightOpacity, isPortrait, emptyMessage, intensity]);
 
   const handleFocus = useCallback(() => {
     // Only hide light effects when NOT on home page
@@ -483,6 +485,12 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
           onClose={() => setIsDeleteThreadPopupOpen(false)}
           open={isDeleteThreadPopupOpen}
         />
+        {isPortrait && !emptyMessage && (
+          <DebugSlider
+            value={intensity}
+            onChange={(e) => setIntensity(parseFloat(e.target.value))}
+          />
+        )}
       </div>
     </>
   );
