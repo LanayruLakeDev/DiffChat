@@ -295,6 +295,10 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
   const { width, height } = useWindowSize();
   const isPortrait = height > width;
   const [intensity, setIntensity] = useState(1);
+  const [lightSpread, setLightSpread] = useState(1);
+  const [rayLength, setRayLength] = useState(2);
+  const [fadeDistance, setFadeDistance] = useState(1);
+  const [saturation, setSaturation] = useState(1);
 
   const particle = useMemo(() => {
     const particleCount = emptyMessage
@@ -315,7 +319,12 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
         style={{ opacity: lightOpacity }}
       >
         <div className="absolute top-0 left-0 w-full h-full z-10 fade-in animate-in duration-5000">
-          <LightRays />
+          <LightRays
+            lightSpread={lightSpread}
+            rayLength={rayLength}
+            fadeDistance={fadeDistance}
+            saturation={saturation}
+          />
         </div>
         <div className="absolute top-0 left-0 w-full h-full z-10 fade-in animate-in duration-5000">
           <Particles
@@ -335,7 +344,16 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
         </div>
       </div>
     );
-  }, [lightOpacity, isPortrait, emptyMessage, intensity]);
+  }, [
+    lightOpacity,
+    isPortrait,
+    emptyMessage,
+    intensity,
+    lightSpread,
+    rayLength,
+    fadeDistance,
+    saturation,
+  ]);
 
   const handleFocus = useCallback(() => {
     // Only hide light effects when NOT on home page
@@ -487,8 +505,22 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
         />
         {isPortrait && !emptyMessage && (
           <DebugSlider
-            value={intensity}
-            onChange={(e) => setIntensity(parseFloat(e.target.value))}
+            intensity={intensity}
+            onIntensityChange={(e) => setIntensity(parseFloat(e.target.value))}
+            lightSpread={lightSpread}
+            onLightSpreadChange={(e) =>
+              setLightSpread(parseFloat(e.target.value))
+            }
+            rayLength={rayLength}
+            onRayLengthChange={(e) => setRayLength(parseFloat(e.target.value))}
+            fadeDistance={fadeDistance}
+            onFadeDistanceChange={(e) =>
+              setFadeDistance(parseFloat(e.target.value))
+            }
+            saturation={saturation}
+            onSaturationChange={(e) =>
+              setSaturation(parseFloat(e.target.value))
+            }
           />
         )}
       </div>
