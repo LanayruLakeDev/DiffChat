@@ -46,6 +46,7 @@ import { Think } from "ui/think";
 import { useGenerateThreadTitle } from "@/hooks/queries/use-generate-thread-title";
 import dynamic from "next/dynamic";
 import { useMounted } from "@/hooks/use-mounted";
+import { useWindowSize } from "@/hooks/use-window-size";
 
 type Props = {
   threadId: string;
@@ -290,7 +291,21 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
     return false;
   }, [isLoading, messages.at(-1)]);
 
+  const { width, height } = useWindowSize();
+  const isPortrait = height > width;
+
   const particle = useMemo(() => {
+    const particleCount = emptyMessage
+      ? 400
+      : isPortrait
+      ? 200
+      : 400;
+    const particleBaseSize = emptyMessage
+      ? 10
+      : isPortrait
+      ? 5
+      : 10;
+
     // Always render, but control with opacity
     return (
       <div
@@ -301,7 +316,10 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
           <LightRays />
         </div>
         <div className="absolute top-0 left-0 w-full h-full z-10 fade-in animate-in duration-5000">
-          <Particles particleCount={50} particleBaseSize={2} />
+          <Particles
+            particleCount={particleCount}
+            particleBaseSize={particleBaseSize}
+          />
         </div>
 
         <div className="absolute top-0 left-0 w-full h-full z-10 fade-in animate-in duration-5000">
@@ -315,7 +333,7 @@ export default function ChatBot({ threadId, initialMessages, slots }: Props) {
         </div>
       </div>
     );
-  }, [lightOpacity]);
+  }, [lightOpacity, isPortrait, emptyMessage]);
 
   const handleFocus = useCallback(() => {
     // Only hide light effects when NOT on home page
