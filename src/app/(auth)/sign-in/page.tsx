@@ -79,18 +79,13 @@ export default function SignInPage() {
       process.env.GITHUB_CLIENT_ID,
     );
 
-    // Temporary fallback for production debugging
-    const githubClientId =
-      process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID || "Ov23liQR0FrEFVBd6qse";
-    console.log("🔧 TEMP: Using GitHub Client ID:", githubClientId);
-
-    if (!githubClientId) {
+    if (!process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID) {
       console.error("❌ GITHUB OAUTH ERROR: GITHUB_CLIENT_ID not configured");
       return toast.warning(t("oauthClientIdNotSet", { provider: "GitHub" }));
     }
 
     console.log("🚀 BETTER AUTH GITHUB SIGNIN: Starting OAuth flow...");
-    console.log("  📋 Client ID:", githubClientId);
+    console.log("  📋 Client ID:", process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID);
     console.log("  🎯 Expected scopes: repo, user:email, read:user");
     console.log("  🔗 Provider: github");
 
