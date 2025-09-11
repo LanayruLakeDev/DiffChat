@@ -65,14 +65,28 @@ export default function SignInPage() {
   };
 
   const githubSignIn = () => {
-    if (!process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID)
+    if (!process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID) {
+      console.error("❌ GITHUB OAUTH ERROR: GITHUB_CLIENT_ID not configured");
       return toast.warning(t("oauthClientIdNotSet", { provider: "GitHub" }));
+    }
+
+    console.log("🚀 BETTER AUTH GITHUB SIGNIN: Starting OAuth flow...");
+    console.log("  📋 Client ID:", process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID);
+    console.log("  🎯 Expected scopes: repo, user:email, read:user");
+    console.log("  🔗 Provider: github");
+
     authClient.signIn
       .social({
         provider: "github",
       })
+      .then((result) => {
+        console.log("✅ GITHUB OAUTH SUCCESS:", result);
+      })
       .catch((e) => {
-        toast.error(e.error);
+        console.error("❌ GITHUB OAUTH ERROR:", e);
+        console.error("  📋 Error details:", e.error);
+        console.error("  📋 Full error object:", e);
+        toast.error(e.error || "GitHub sign-in failed");
       });
   };
 

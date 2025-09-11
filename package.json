@@ -46,6 +46,7 @@
     "@ai-sdk/react": "^1.2.12",
     "@ai-sdk/xai": "^1.2.18",
     "@modelcontextprotocol/sdk": "^1.17.0",
+    "@octokit/rest": "^22.0.0",
     "@openrouter/ai-sdk-provider": "^0.4.6",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-avatar": "^1.1.10",
@@ -85,6 +86,7 @@
     "emoji-picker-react": "^4.13.2",
     "framer-motion": "^12.23.10",
     "hast-util-to-jsx-runtime": "^2.3.6",
+    "js-base64": "^3.7.8",
     "json-schema": "^0.4.0",
     "lucide-react": "^0.486.0",
     "mermaid": "^11.9.0",
@@ -135,10 +137,7 @@
     "vitest": "^3.2.4"
   },
   "lint-staged": {
-    "*.{js,json,mjs,ts,yaml,tsx,css}": [
-      "pnpm format",
-      "pnpm lint:fix"
-    ]
+    "*.{js,json,mjs,ts,yaml,tsx,css}": ["pnpm format", "pnpm lint:fix"]
   },
   "packageManager": "pnpm@10.2.1",
   "engines": {

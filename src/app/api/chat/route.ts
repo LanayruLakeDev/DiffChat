@@ -13,7 +13,7 @@ import { customModelProvider, isToolCallUnsupportedModel } from "lib/ai/models";
 
 import { mcpClientsManager } from "lib/ai/mcp/mcp-manager";
 
-import { agentRepository, chatRepository } from "lib/db/repository";
+import { agentRepository, createChatRepository } from "lib/db/repository";
 import globalLogger from "logger";
 import {
   buildMcpServerCustomizationsSystemPrompt,
@@ -55,13 +55,21 @@ const logger = globalLogger.withDefaults({
 
 export async function POST(request: Request) {
   try {
+    console.log("🚀 CHAT API: Received new chat request");
     const json = await request.json();
 
     const session = await getSession();
+    console.log("👤 CHAT API: Session user ID:", session?.user?.id);
 
     if (!session?.user.id) {
+      console.error("❌ CHAT API: Unauthorized - no session user ID");
       return new Response("Unauthorized", { status: 401 });
     }
+
+    console.log("🏭 CHAT API: Creating chat repository...");
+    // Create the appropriate chat repository based on configuration
+    const chatRepository = await createChatRepository(session);
+    console.log("✅ CHAT API: Chat repository created successfully");
 
     const {
       id,
@@ -74,21 +82,39 @@ export async function POST(request: Request) {
       mentions = [],
     } = chatApiSchemaRequestBodySchema.parse(json);
 
+    console.log("📝 CHAT API: Parsed request data:");
+    console.log("  📄 Thread ID:", id);
+    console.log("  💬 Message role:", message.role);
+    console.log("  🤖 Chat model:", chatModel);
+    console.log("  👤 User ID:", session.user.id);
+
     const model = customModelProvider.getModel(chatModel);
 
+    console.log("📖 CHAT API: Looking up thread details...");
     let thread = await chatRepository.selectThreadDetails(id);
 
     if (!thread) {
+      console.log("📄 CHAT API: Thread not found, creating new thread...");
       logger.info(`create chat thread: ${id}`);
       const newThread = await chatRepository.insertThread({
         id,
         title: "",
         userId: session.user.id,
       });
+      console.log("✅ CHAT API: New thread created, fetching details...");
       thread = await chatRepository.selectThreadDetails(newThread.id);
+    } else {
+      console.log(
+        "📄 CHAT API: Found existing thread with",
+        thread.messages.length,
+        "messages",
+      );
     }
 
     if (thread!.userId !== session.user.id) {
+      console.error(
+        "❌ CHAT API: Forbidden - thread belongs to different user",
+      );
       return new Response("Forbidden", { status: 403 });
     }
 
@@ -240,6 +266,7 @@ export async function POST(request: Request) {
               responseMessages: response.messages,
             });
             if (isLastMessageUserMessage) {
+              console.log("💾 CHAT API: Saving user message...");
               await chatRepository.upsertMessage({
                 threadId: thread!.id,
                 model: chatModel?.model ?? null,
@@ -251,9 +278,11 @@ export async function POST(request: Request) {
                   usageTokens: usage.promptTokens,
                 }),
               });
+              console.log("✅ CHAT API: User message saved successfully");
             }
             const assistantMessage = appendMessages.at(-1);
             if (assistantMessage) {
+              console.log("💾 CHAT API: Saving assistant message...");
               const annotations = appendAnnotations(
                 assistantMessage.annotations,
                 {

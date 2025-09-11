@@ -60,3 +60,8 @@ Luminar-AI.7z
 test-github-fixes.js
 check-user-exists.sql
 cleanup-user.sql
+
+# External reference directories (not part of our app)
+DiffDB/
+DiffMem/
+_Auberonchat/

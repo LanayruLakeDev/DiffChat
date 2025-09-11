@@ -8,6 +8,7 @@
 
 Our goal is to create the best possible chatbot UX — focusing on the joy and intuitiveness users feel when calling and interacting with AI tools.
 
+🚀 **NEW: DiffDB Integration** - Store your AI conversations in YOUR GitHub repository! [Learn more](#diffdb-github-based-memory)
 
 See the experience in action in the [preview](#preview) below!
 
@@ -239,6 +240,46 @@ pnpm build:local && pnpm start
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to get started.
+
+<br/>
+
+## 🚀 DiffDB: GitHub-Based Memory
+
+**NEW!** DiffDB enables storing your AI conversations in YOUR GitHub repository instead of a traditional database.
+
+### ✨ Benefits
+- **Your Data, Your Control**: All conversations stored in YOUR private GitHub repository
+- **No Vendor Lock-in**: Export your data anytime - it's just Markdown files
+- **Version History**: Full conversation evolution tracking via Git history
+- **Privacy First**: Data never leaves your GitHub account
+
+### 🔧 Setup
+```bash
+# 1. Create a GitHub OAuth App
+# Go to GitHub Settings > Developer settings > OAuth Apps
+# Add: http://localhost:3000/api/auth/callback/github
+
+# 2. Enable DiffDB in your .env
+DIFFDB_ENABLED=true
+GITHUB_CLIENT_ID=your_github_client_id  
+GITHUB_CLIENT_SECRET=your_github_client_secret
+
+# 3. Sign in with GitHub
+# The app will automatically create a private 'luminar-ai-data' repository
+```
+
+### 📁 Repository Structure
+```
+luminar-ai-data/
+├── users/{username}/
+│   ├── index.md              # Memory index
+│   └── memories/
+│       ├── people/           # Relationship profiles  
+│       ├── contexts/         # Thematic knowledge
+│       └── timeline/         # Chronological conversations
+```
+
+[📚 Full DiffDB Documentation](docs/diffdb-system.md)
 
 <br/>
 

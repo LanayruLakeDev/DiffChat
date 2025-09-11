@@ -4,7 +4,7 @@ import { customModelProvider } from "lib/ai/models";
 import { CREATE_THREAD_TITLE_PROMPT } from "lib/ai/prompts";
 import globalLogger from "logger";
 import { ChatModel } from "app-types/chat";
-import { chatRepository } from "lib/db/repository";
+import { createChatRepository } from "lib/db/repository";
 import { getSession } from "auth/server";
 import { colorize } from "consola/utils";
 import { handleError } from "../shared.chat";
@@ -37,7 +37,10 @@ export async function POST(request: Request) {
     );
 
     return createDataStreamResponse({
-      execute(dataStream) {
+      async execute(dataStream) {
+        // Create the appropriate chat repository based on configuration
+        const chatRepository = await createChatRepository(session);
+
         const result = streamText({
           model: customModelProvider.getModel(chatModel),
           system: CREATE_THREAD_TITLE_PROMPT,

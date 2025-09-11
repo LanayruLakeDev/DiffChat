@@ -1,4 +1,4 @@
-import { archiveRepository, chatRepository } from "lib/db/repository";
+import { archiveRepository, createChatRepository } from "lib/db/repository";
 import { getSession } from "auth/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -57,6 +57,8 @@ async function getArchiveWithThreads(
     return { ...archive, threads: [] };
   }
 
+  // Create the appropriate chat repository based on configuration
+  const chatRepository = await createChatRepository(session);
   const allThreads = await chatRepository.selectThreadsByUserId(
     session.user.id,
   );

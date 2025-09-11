@@ -17,7 +17,7 @@ import type { ChatModel, ChatThread } from "app-types/chat";
 
 import {
   agentRepository,
-  chatRepository,
+  createChatRepository,
   mcpMcpToolCustomizationRepository,
   mcpServerCustomizationRepository,
 } from "lib/db/repository";
@@ -28,6 +28,11 @@ import { serverCache } from "lib/cache";
 import { CacheKeys } from "lib/cache/cache-keys";
 import { getSession } from "auth/server";
 import logger from "logger";
+
+async function getChatRepository() {
+  const session = await getSession();
+  return await createChatRepository(session);
+}
 
 import { JSONSchema7 } from "json-schema";
 import { ObjectJsonSchema7 } from "app-types/util";
@@ -61,6 +66,7 @@ export async function generateTitleFromUserMessageAction({
 
 export async function selectThreadWithMessagesAction(threadId: string) {
   const session = await getSession();
+  const chatRepository = await getChatRepository();
   const thread = await chatRepository.selectThread(threadId);
 
   if (!thread) {
@@ -75,10 +81,12 @@ export async function selectThreadWithMessagesAction(threadId: string) {
 }
 
 export async function deleteMessageAction(messageId: string) {
+  const chatRepository = await getChatRepository();
   await chatRepository.deleteChatMessage(messageId);
 }
 
 export async function deleteThreadAction(threadId: string) {
+  const chatRepository = await getChatRepository();
   await chatRepository.deleteThread(threadId);
 }
 
@@ -86,6 +94,7 @@ export async function deleteMessagesByChatIdAfterTimestampAction(
   messageId: string,
 ) {
   "use server";
+  const chatRepository = await getChatRepository();
   await chatRepository.deleteMessagesByChatIdAfterTimestamp(messageId);
 }
 
@@ -94,16 +103,19 @@ export async function updateThreadAction(
   thread: Partial<Omit<ChatThread, "createdAt" | "updatedAt" | "userId">>,
 ) {
   const userId = await getUserId();
+  const chatRepository = await getChatRepository();
   await chatRepository.updateThread(id, { ...thread, userId });
 }
 
 export async function deleteThreadsAction() {
   const userId = await getUserId();
+  const chatRepository = await getChatRepository();
   await chatRepository.deleteAllThreads(userId);
 }
 
 export async function deleteUnarchivedThreadsAction() {
   const userId = await getUserId();
+  const chatRepository = await getChatRepository();
   await chatRepository.deleteUnarchivedThreads(userId);
 }
 

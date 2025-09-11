@@ -1,10 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "ui/card";
 import { Button } from "ui/button";
 import { Badge } from "ui/badge";
-import { CheckCircle2, Circle, GitBranch, Database, Shield } from "lucide-react";
+import {
+  CheckCircle2,
+  Circle,
+  GitBranch,
+  Database,
+  Shield,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getSession } from "auth/client";
 
@@ -28,7 +40,8 @@ export function DiffDBSetupGuide() {
     {
       id: "repo-creation",
       title: "Repository Creation",
-      description: "We'll create a private 'luminar-ai-data' repository in your account",
+      description:
+        "We'll create a private 'luminar-ai-data' repository in your account",
       completed: false,
       icon: <Database className="w-5 h-5" />,
     },
@@ -54,27 +67,29 @@ export function DiffDBSetupGuide() {
       if (session?.user) {
         setCurrentUser(session.user);
         // Check if user has GitHub account connected
-        const hasGitHub = session.user.accounts?.some((account: any) => account.providerId === 'github');
+        const hasGitHub = session.user.accounts?.some(
+          (account: any) => account.providerId === "github",
+        );
         if (hasGitHub) {
-          setSteps(prev => prev.map(step => 
-            step.id === 'github-auth' 
-              ? { ...step, completed: true }
-              : step
-          ));
+          setSteps((prev) =>
+            prev.map((step) =>
+              step.id === "github-auth" ? { ...step, completed: true } : step,
+            ),
+          );
         }
       }
     } catch (error) {
-      console.error('Failed to check auth status:', error);
+      console.error("Failed to check auth status:", error);
     }
   };
 
   const handleGetStarted = () => {
     if (currentUser) {
       // User is already signed in, proceed to app
-      router.push('/');
+      router.push("/");
     } else {
       // Redirect to sign-in page
-      router.push('/sign-in');
+      router.push("/sign-in");
     }
   };
 
@@ -111,7 +126,7 @@ export function DiffDBSetupGuide() {
 
           <div className="space-y-4">
             <h3 className="font-semibold text-lg">Setup Process</h3>
-            {steps.map((step, index) => (
+            {steps.map((step, _index) => (
               <div key={step.id} className="flex items-start space-x-3">
                 <div className="flex-shrink-0 mt-1">
                   {step.completed ? (
@@ -123,7 +138,9 @@ export function DiffDBSetupGuide() {
                 <div className="flex-grow">
                   <div className="flex items-center space-x-2">
                     {step.icon}
-                    <h4 className={`font-medium ${step.completed ? 'text-green-800 dark:text-green-200' : 'text-gray-900 dark:text-gray-100'}`}>
+                    <h4
+                      className={`font-medium ${step.completed ? "text-green-800 dark:text-green-200" : "text-gray-900 dark:text-gray-100"}`}
+                    >
                       {step.title}
                     </h4>
                   </div>
@@ -137,25 +154,23 @@ export function DiffDBSetupGuide() {
 
           <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-4">
             <h4 className="font-medium text-amber-900 dark:text-amber-100 mb-2">
-              ⚡ Quick Setup (< 30 seconds)
+              ⚡ Quick Setup (&lt; 30 seconds)
             </h4>
             <p className="text-sm text-amber-800 dark:text-amber-200">
-              1. Sign in with GitHub • 2. Authorize repository creation • 3. Start chatting!
+              1. Sign in with GitHub • 2. Authorize repository creation • 3.
+              Start chatting!
             </p>
           </div>
 
           <div className="flex flex-col space-y-3">
-            <Button 
-              onClick={handleGetStarted}
-              size="lg" 
-              className="w-full"
-            >
-              {currentUser ? 'Continue to App' : 'Get Started with GitHub'}
+            <Button onClick={handleGetStarted} size="lg" className="w-full">
+              {currentUser ? "Continue to App" : "Get Started with GitHub"}
             </Button>
-            
+
             {!currentUser && (
               <p className="text-xs text-center text-muted-foreground">
-                By continuing, you agree to let Luminar-AI create a private repository in your GitHub account
+                By continuing, you agree to let Luminar-AI create a private
+                repository in your GitHub account
               </p>
             )}
           </div>
