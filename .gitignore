@@ -54,3 +54,9 @@ local-data
 *.ignore
 .mcp-config.json
 openai-compatible.config.ts
+
+# Local artifacts to ignore
+Luminar-AI.7z
+test-github-fixes.js
+check-user-exists.sql
+cleanup-user.sql
