@@ -18,7 +18,7 @@ import {
   Shield,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { getSession } from "auth/client";
+import { authClient } from "@/lib/auth/client";
 
 interface SetupStep {
   id: string;
@@ -56,32 +56,20 @@ export function DiffDBSetupGuide() {
 
   const [currentUser, setCurrentUser] = useState<any>(null);
   const router = useRouter();
+  const { data: session } = authClient.useSession();
 
   useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      const session = await getSession();
-      if (session?.user) {
-        setCurrentUser(session.user);
-        // Check if user has GitHub account connected
-        const hasGitHub = session.user.accounts?.some(
-          (account: any) => account.providerId === "github",
-        );
-        if (hasGitHub) {
-          setSteps((prev) =>
-            prev.map((step) =>
-              step.id === "github-auth" ? { ...step, completed: true } : step,
-            ),
-          );
-        }
-      }
-    } catch (error) {
-      console.error("Failed to check auth status:", error);
+    if (session?.user) {
+      setCurrentUser(session.user);
+      // For now, just mark GitHub auth as completed if user is logged in
+      // TODO: Add proper GitHub account connection detection
+      setSteps((prev) =>
+        prev.map((step) =>
+          step.id === "github-auth" ? { ...step, completed: true } : step,
+        ),
+      );
     }
-  };
+  }, [session]);
 
   const handleGetStarted = () => {
     if (currentUser) {
