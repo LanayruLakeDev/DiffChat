@@ -65,6 +65,20 @@ export default function SignInPage() {
   };
 
   const githubSignIn = () => {
+    // Debug: Log all environment variables that start with NEXT_PUBLIC
+    console.log(
+      "🔍 DEBUG: All NEXT_PUBLIC env vars:",
+      Object.keys(process.env).filter((key) => key.startsWith("NEXT_PUBLIC")),
+    );
+    console.log(
+      "🔍 DEBUG: NEXT_PUBLIC_GITHUB_CLIENT_ID value:",
+      process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID,
+    );
+    console.log(
+      "🔍 DEBUG: GITHUB_CLIENT_ID value:",
+      process.env.GITHUB_CLIENT_ID,
+    );
+
     if (!process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID) {
       console.error("❌ GITHUB OAUTH ERROR: GITHUB_CLIENT_ID not configured");
       return toast.warning(t("oauthClientIdNotSet", { provider: "GitHub" }));
