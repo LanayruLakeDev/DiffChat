@@ -9,6 +9,7 @@ import { Toaster } from "ui/sonner";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { DiffDBQueryProvider } from "@/lib/diffdb/query-provider";
+import { DiffDBDebugProvider } from "@/lib/diffdb/debug-provider";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -47,12 +48,14 @@ export default async function RootLayout({
         >
           <ThemeStyleProvider>
             <DiffDBQueryProvider>
-              <NextIntlClientProvider>
-                <div id="root">
-                  {children}
-                  <Toaster richColors />
-                </div>
-              </NextIntlClientProvider>
+              <DiffDBDebugProvider>
+                <NextIntlClientProvider>
+                  <div id="root">
+                    {children}
+                    <Toaster richColors />
+                  </div>
+                </NextIntlClientProvider>
+              </DiffDBDebugProvider>
             </DiffDBQueryProvider>
           </ThemeStyleProvider>
         </ThemeProvider>
