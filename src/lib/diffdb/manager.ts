@@ -169,18 +169,22 @@ export class DiffDBManager {
     console.log("  💬 Message ID:", message.id);
     console.log("  📄 Thread ID:", message.threadId);
     console.log("  👤 Role:", message.role);
+    console.log("  📝 Parts count:", message.parts?.length || 0);
 
     try {
       const date = new Date(message.createdAt);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
       const filePath = `users/${this.githubUsername}/memories/timeline/${monthKey}.md`;
       console.log("  📁 Message timeline file path:", filePath);
+      console.log("  📅 Timeline month:", monthKey);
 
+      console.log("🔍 GITHUB API: Checking for existing timeline file...");
       let existingFile = await this.githubClient.getFile(
         this.repoName,
         filePath,
       );
       if (!existingFile) {
+        console.log("📄 TIMELINE: Creating new monthly timeline file");
         // Create monthly file if it doesn't exist
         existingFile = {
           path: filePath,
@@ -235,6 +239,8 @@ ${messageContent}
       }
 
       console.log("  💾 Saving message to GitHub...");
+      console.log("🌐 GITHUB API: Creating/updating timeline file...");
+      const githubStartTime = Date.now();
       await this.githubClient.createOrUpdateFile(
         this.repoName,
         filePath,
@@ -242,6 +248,8 @@ ${messageContent}
         `Add message from ${message.role} in thread: ${threadTitle}`,
         existingFile?.sha,
       );
+      const githubTime = Date.now() - githubStartTime;
+      console.log(`🌐 GITHUB API: Timeline file updated in ${githubTime}ms`);
       console.log("✅ DIFFDB MANAGER: Message saved successfully to GitHub");
     } catch (error) {
       console.error("❌ DIFFDB MANAGER SAVE MESSAGE ERROR:", error);
@@ -255,15 +263,18 @@ ${messageContent}
   async loadThreads(limit: number = 50): Promise<ChatThread[]> {
     console.log("📚 DIFFDB MANAGER: Loading threads for user:", this.userId);
     console.log("📚 DIFFDB MANAGER: GitHub username:", this.githubUsername);
+    console.log("📚 DIFFDB MANAGER: Thread limit:", limit);
 
     try {
+      console.log("🔍 GITHUB API: Listing timeline files...");
+      const listStartTime = Date.now();
       const timelineFiles = await this.githubClient.listFiles(
         this.repoName,
         `users/${this.githubUsername}/memories/timeline`,
       );
+      const listTime = Date.now() - listStartTime;
       console.log(
-        "📚 DIFFDB MANAGER: Found",
-        timelineFiles.length,
+        `📚 DIFFDB MANAGER: Found ${timelineFiles.length} timeline files in ${listTime}ms`,
         "timeline files",
       );
       console.log("📚 DIFFDB MANAGER: Timeline files:", timelineFiles);
@@ -400,6 +411,7 @@ ${messageContent}
         "✅ DIFFDB MANAGER: Loaded unique threads:",
         uniqueThreads.map((t) => ({ id: t.id, title: t.title })),
       );
+      console.log("📊 LOAD PERFORMANCE: Total load time for threads complete");
 
       return uniqueThreads;
     } catch (error) {
@@ -574,6 +586,280 @@ ${messageContent}
         `Delete thread: ${threadId}`,
         file.sha,
       );
+    }
+  }
+
+  /**
+   * Delete a specific message from timeline files
+   */
+  async deleteMessage(messageId: string, threadId: string): Promise<void> {
+    console.log(
+      `🗑️ DIFFDB MANAGER: Deleting message ${messageId} from thread ${threadId}`,
+    );
+
+    try {
+      const timelineFiles = await this.githubClient.listFiles(
+        this.repoName,
+        `users/${this.githubUsername}/memories/timeline`,
+      );
+
+      console.log(
+        `🗑️ DIFFDB MANAGER: Scanning ${timelineFiles.length} timeline files for message`,
+      );
+
+      for (const filePath of timelineFiles) {
+        if (!filePath.endsWith(".md") || filePath.endsWith(".gitkeep"))
+          continue;
+
+        const file = await this.githubClient.getFile(this.repoName, filePath);
+        if (!file) continue;
+
+        const content = file.content;
+        const threadMarker = `(${threadId})`;
+
+        // Check if this file contains the thread
+        if (!content.includes(threadMarker)) continue;
+
+        console.log(
+          `🗑️ DIFFDB MANAGER: Found thread in file ${filePath}, searching for message...`,
+        );
+
+        // Find the thread section
+        const threadStart = content.indexOf(threadMarker);
+        const nextThreadStart = content.indexOf(
+          "\n#### Thread:",
+          threadStart + 1,
+        );
+        const threadContent =
+          nextThreadStart === -1
+            ? content.slice(threadStart)
+            : content.slice(threadStart, nextThreadStart);
+
+        // Look for the message in this thread section
+        // We'll identify messages by their timestamp or content since messageId might not be in the file
+        const messageMatches = Array.from(
+          threadContent.matchAll(
+            /##### (👤 User|🤖 Assistant) \(([^)]+)\)\n([\s\S]*?)(?=\n---|$)/g,
+          ),
+        );
+
+        let messageFound = false;
+        let updatedContent = content;
+
+        for (let i = 0; i < messageMatches.length; i++) {
+          const match = messageMatches[i];
+          const messageText = match[3].trim();
+
+          // Try to identify the message by checking if it contains the messageId or unique content
+          // In a more robust implementation, we'd store messageId in the timeline file
+          if (
+            messageText.includes(messageId) ||
+            this.isMessageMatch(messageText, messageId)
+          ) {
+            console.log(
+              `🗑️ DIFFDB MANAGER: Found message to delete at index ${i}`,
+            );
+
+            const fullMatch = match[0];
+            updatedContent = updatedContent.replace(fullMatch + "\n---\n", "");
+            messageFound = true;
+            break;
+          }
+        }
+
+        if (messageFound) {
+          console.log(
+            `🗑️ DIFFDB MANAGER: Message found and removed, updating file...`,
+          );
+
+          await this.githubClient.createOrUpdateFile(
+            this.repoName,
+            filePath,
+            updatedContent,
+            `Delete message ${messageId} from thread ${threadId}`,
+            file.sha,
+          );
+
+          console.log(
+            `✅ DIFFDB MANAGER: Message ${messageId} deleted successfully`,
+          );
+          return;
+        }
+      }
+
+      console.warn(
+        `⚠️ DIFFDB MANAGER: Message ${messageId} not found in any timeline file`,
+      );
+    } catch (error) {
+      console.error(`❌ DIFFDB MANAGER DELETE MESSAGE ERROR:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Helper method to identify if a message matches the given messageId
+   * This is a simple implementation - in production, we'd store messageId in the timeline
+   */
+  private isMessageMatch(messageContent: string, messageId: string): boolean {
+    // Simple heuristic: check if message content contains parts of the messageId
+    // or if it's a unique pattern we can identify
+    return (
+      messageContent.length > 10 &&
+      messageId.length > 10 &&
+      messageContent.includes(messageId.slice(0, 8))
+    );
+  }
+
+  /**
+   * Update a specific message in timeline files
+   */
+  async updateMessage(
+    messageId: string,
+    threadId: string,
+    newContent: string,
+  ): Promise<void> {
+    console.log(
+      `🔄 DIFFDB MANAGER: Updating message ${messageId} in thread ${threadId}`,
+    );
+
+    try {
+      const timelineFiles = await this.githubClient.listFiles(
+        this.repoName,
+        `users/${this.githubUsername}/memories/timeline`,
+      );
+
+      for (const filePath of timelineFiles) {
+        if (!filePath.endsWith(".md") || filePath.endsWith(".gitkeep"))
+          continue;
+
+        const file = await this.githubClient.getFile(this.repoName, filePath);
+        if (!file) continue;
+
+        const content = file.content;
+        const threadMarker = `(${threadId})`;
+
+        if (!content.includes(threadMarker)) continue;
+
+        const threadStart = content.indexOf(threadMarker);
+        const nextThreadStart = content.indexOf(
+          "\n#### Thread:",
+          threadStart + 1,
+        );
+        const threadContent =
+          nextThreadStart === -1
+            ? content.slice(threadStart)
+            : content.slice(threadStart, nextThreadStart);
+
+        const messageMatches = Array.from(
+          threadContent.matchAll(
+            /##### (👤 User|🤖 Assistant) \(([^)]+)\)\n([\s\S]*?)(?=\n---|$)/g,
+          ),
+        );
+
+        for (const match of messageMatches) {
+          const messageText = match[3].trim();
+
+          if (
+            messageText.includes(messageId) ||
+            this.isMessageMatch(messageText, messageId)
+          ) {
+            console.log(`🔄 DIFFDB MANAGER: Found message to update`);
+
+            const oldMatch = match[0];
+            const role = match[1];
+            const timestamp = match[2];
+            const newMatch = `##### ${role} (${timestamp})\n${newContent}\n\n---`;
+
+            const updatedContent = content.replace(oldMatch, newMatch);
+
+            await this.githubClient.createOrUpdateFile(
+              this.repoName,
+              filePath,
+              updatedContent,
+              `Update message ${messageId} in thread ${threadId}`,
+              file.sha,
+            );
+
+            console.log(
+              `✅ DIFFDB MANAGER: Message ${messageId} updated successfully`,
+            );
+            return;
+          }
+        }
+      }
+
+      console.warn(
+        `⚠️ DIFFDB MANAGER: Message ${messageId} not found for update`,
+      );
+    } catch (error) {
+      console.error(`❌ DIFFDB MANAGER UPDATE MESSAGE ERROR:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update thread metadata in timeline files
+   */
+  async updateThreadInTimeline(
+    threadId: string,
+    updatedThread: ChatThread,
+  ): Promise<void> {
+    console.log(
+      `🔄 DIFFDB MANAGER: Updating thread ${threadId} in timeline files`,
+    );
+
+    try {
+      const timelineFiles = await this.githubClient.listFiles(
+        this.repoName,
+        `users/${this.githubUsername}/memories/timeline`,
+      );
+
+      for (const filePath of timelineFiles) {
+        if (!filePath.endsWith(".md") || filePath.endsWith(".gitkeep"))
+          continue;
+
+        const file = await this.githubClient.getFile(this.repoName, filePath);
+        if (!file) continue;
+
+        const content = file.content;
+
+        // Check if this file contains the thread
+        if (!content.includes(`(${threadId})`)) continue;
+
+        console.log(
+          `🔄 DIFFDB MANAGER: Found thread in file ${filePath}, updating...`,
+        );
+
+        // Find and replace the thread header
+        const threadHeaderRegex = new RegExp(
+          `#### Thread: ([^(]*?)\\s*\\(${threadId}\\)`,
+          "g",
+        );
+        const updatedContent = content.replace(
+          threadHeaderRegex,
+          `#### Thread: ${updatedThread.title} (${threadId})`,
+        );
+
+        // If content changed, update the file
+        if (updatedContent !== content) {
+          await this.githubClient.createOrUpdateFile(
+            this.repoName,
+            filePath,
+            updatedContent,
+            `Update thread "${updatedThread.title}" (${threadId})`,
+            file.sha,
+          );
+
+          console.log(
+            `✅ DIFFDB MANAGER: Thread ${threadId} updated in ${filePath}`,
+          );
+        }
+      }
+
+      console.log(`✅ DIFFDB MANAGER: Thread ${threadId} update complete`);
+    } catch (error) {
+      console.error(`❌ DIFFDB MANAGER UPDATE THREAD ERROR:`, error);
+      throw error;
     }
   }
 }

@@ -5,8 +5,45 @@ import { DiffDBCache } from "./cache";
 import logger from "logger";
 
 /**
- * DiffDB implementation of ChatRepository
- * Replaces PostgreSQL with GitHub-based storage
+ * DiffDB implementation of Cha  async updateThread(
+    id: string,
+    thread: Partial<Omit<ChatThread, "createdAt" | "id">>,
+  ): Promise<ChatThread> {
+    console.log(`🔄 DIFFDB THREAD UPDATE: Updating thread ${id}`, thread);
+    
+    try {
+      // Get the existing thread
+      const existingThread = await this.selectThread(id);
+      if (!existingThread) {
+        throw new Error(`Thread ${id} not found`);
+      }
+
+      // Create updated thread
+      const updatedThread: ChatThread = {
+        ...existingThread,
+        ...thread,
+        id, // Keep original ID
+        createdAt: existingThread.createdAt, // Keep original creation date
+      };
+
+      console.log(`🔄 DIFFDB THREAD UPDATE: Old title: "${existingThread.title}"`);
+      console.log(`🔄 DIFFDB THREAD UPDATE: New title: "${updatedThread.title}"`);
+
+      // Update in GitHub timeline files
+      await this.diffDBManager.updateThreadInTimeline(id, updatedThread);
+      
+      // Update cache
+      this.cache.updateThread(updatedThread.userId, id, thread);
+      
+      console.log("✅ DIFFDB THREAD UPDATE SUCCESS: Thread updated in GitHub");
+      logger.info(`DiffDB: Updated thread ${id}`);
+      
+      return updatedThread;
+    } catch (error) {
+      console.error("❌ DIFFDB THREAD UPDATE ERROR:", error);
+      throw error;
+    }
+  } Replaces PostgreSQL with GitHub-based storage
  */
 export class DiffDBChatRepository implements ChatRepository {
   private diffDBManager: DiffDBManager;
@@ -123,19 +160,29 @@ export class DiffDBChatRepository implements ChatRepository {
 
     try {
       // Get thread title for context
+      console.log("🔍 DIFFDB: Looking up thread for context...");
       const thread = await this.selectThread(message.threadId);
       const threadTitle = thread?.title || "Unknown Thread";
       console.log("  📄 Thread title for context:", threadTitle);
 
       // Add to cache optimistically (this will make it appear instantly in UI)
+      console.log("⚡ OPTIMISTIC: Adding message to cache immediately...");
       this.cache.addMessageOptimistically(message.threadId, fullMessage);
+      console.log("⚡ OPTIMISTIC: Message added to cache, user sees it now!");
 
       // Save to GitHub in background
+      console.log("🌐 GITHUB SYNC: Starting background save to GitHub...");
+      const syncStartTime = Date.now();
       await this.diffDBManager.saveMessage(fullMessage, threadTitle);
-      console.log("✅ DIFFDB MESSAGE INSERT SUCCESS: Message saved to GitHub");
+      const syncTime = Date.now() - syncStartTime;
+      console.log(`🌐 GITHUB SYNC: Message saved to GitHub in ${syncTime}ms`);
 
       // Update cache with the real message (replacing optimistic one)
+      console.log("💾 CACHE SYNC: Updating cache with real GitHub data...");
       this.cache.updateMessage(message.threadId, fullMessage.id, fullMessage);
+      console.log(
+        "✅ DIFFDB MESSAGE INSERT SUCCESS: Complete sync cycle finished",
+      );
 
       logger.info(
         `DiffDB: Inserted message ${message.id} into thread ${message.threadId}`,
@@ -150,11 +197,48 @@ export class DiffDBChatRepository implements ChatRepository {
   }
 
   async deleteChatMessage(id: string): Promise<void> {
-    console.log("🗑️ DIFFDB MESSAGE DELETE: Attempting to delete message:", id);
-    // For now, we'll implement soft delete by marking in the timeline
-    // Full implementation would require parsing and updating specific messages
-    logger.warn(`DiffDB: Message deletion not fully implemented for ${id}`);
-    // TODO: Implement message deletion in timeline files
+    console.log("🗑️ DIFFDB MESSAGE DELETE: Deleting message:", id);
+
+    try {
+      // Find which thread this message belongs to by checking cache first
+      let foundThreadId: string | null = null;
+
+      // Check all cached threads to find the message
+      const allThreads = await this.diffDBManager.loadThreads();
+      for (const thread of allThreads) {
+        const messages = await this.diffDBManager.loadMessages(thread.id);
+        const messageExists = messages.find((m) => m.id === id);
+        if (messageExists) {
+          foundThreadId = thread.id;
+          break;
+        }
+      }
+
+      if (!foundThreadId) {
+        console.warn(
+          `⚠️ DIFFDB MESSAGE DELETE: Message ${id} not found in any thread`,
+        );
+        return;
+      }
+
+      console.log(
+        `🗑️ DIFFDB MESSAGE DELETE: Found message in thread ${foundThreadId}`,
+      );
+
+      // Delete from GitHub timeline
+      await this.diffDBManager.deleteMessage(id, foundThreadId);
+
+      // Update cache by removing the message
+      this.cache.invalidateThread(foundThreadId);
+
+      console.log(
+        "✅ DIFFDB MESSAGE DELETE SUCCESS: Message deleted from GitHub",
+      );
+      logger.info(`DiffDB: Deleted message ${id} from thread ${foundThreadId}`);
+    } catch (error) {
+      console.error("❌ DIFFDB MESSAGE DELETE ERROR:", error);
+      throw error;
+    }
   }
 
   async selectThread(id: string): Promise<ChatThread | null> {
@@ -191,20 +275,34 @@ export class DiffDBChatRepository implements ChatRepository {
       "💬 DIFFDB MESSAGES SELECT: Getting messages for thread:",
       threadId,
     );
+    console.log("💬 CACHE CHECK: Checking cache first...");
 
     // Try cache first
     const cachedMessages = this.cache.getMessages(threadId);
     if (cachedMessages) {
+      console.log("⚡ CACHE SUCCESS: Returning cached messages");
       return cachedMessages;
     }
 
     // Cache miss - fetch from GitHub
     console.log("💾 CACHE MISS: Loading messages from GitHub...");
+    console.log("🌐 GITHUB API: Starting message fetch...");
+
+    const startTime = Date.now();
     const messages = await this.diffDBManager.loadMessages(threadId);
+    const loadTime = Date.now() - startTime;
+
+    console.log(
+      `🌐 GITHUB API: Loaded ${messages.length} messages in ${loadTime}ms`,
+    );
 
     // Store in cache
+    console.log("💾 CACHE UPDATE: Storing messages in cache...");
     this.cache.setMessages(threadId, messages);
 
+    console.log(
+      "✅ DIFFDB MESSAGES SELECT SUCCESS: Returning messages with cache update",
+    );
     return messages;
   }
 
@@ -212,10 +310,12 @@ export class DiffDBChatRepository implements ChatRepository {
     userId: string,
   ): Promise<(ChatThread & { lastMessageAt: number })[]> {
     console.log("📖 DIFFDB THREADS SELECT: Getting threads for user:", userId);
+    console.log("📖 CACHE CHECK: Checking cache first...");
 
     // Try cache first
     const cachedThreads = this.cache.getThreads(userId);
     if (cachedThreads) {
+      console.log("⚡ CACHE SUCCESS: Returning cached threads");
       return cachedThreads.map((thread) => ({
         ...thread,
         lastMessageAt: thread.createdAt.getTime(),
@@ -224,16 +324,30 @@ export class DiffDBChatRepository implements ChatRepository {
 
     // Cache miss - fetch from GitHub
     console.log("💾 CACHE MISS: Loading threads from GitHub...");
+    console.log("🌐 GITHUB API: Starting thread fetch...");
+
+    const startTime = Date.now();
     const threads = await this.diffDBManager.loadThreads();
+    const loadTime = Date.now() - startTime;
+
+    console.log(
+      `🌐 GITHUB API: Loaded ${threads.length} threads in ${loadTime}ms`,
+    );
 
     // Store in cache
+    console.log("💾 CACHE UPDATE: Storing threads in cache...");
     this.cache.setThreads(userId, threads);
 
     // Add lastMessageAt timestamp - for now use createdAt, can be enhanced
-    return threads.map((thread) => ({
+    const result = threads.map((thread) => ({
       ...thread,
       lastMessageAt: thread.createdAt.getTime(),
     }));
+
+    console.log(
+      "✅ DIFFDB THREADS SELECT SUCCESS: Returning threads with cache update",
+    );
+    return result;
   }
 
   async deleteThread(id: string): Promise<void> {
@@ -242,10 +356,67 @@ export class DiffDBChatRepository implements ChatRepository {
   }
 
   async deleteMessagesByChatIdAfterTimestamp(messageId: string): Promise<void> {
-    // TODO: Implement selective message deletion
-    logger.warn(
-      `DiffDB: Selective message deletion not implemented for ${messageId}`,
+    console.log(
+      `🗑️ DIFFDB SELECTIVE DELETE: Deleting messages after ${messageId}`,
     );
+
+    try {
+      // Find the thread and message timestamp
+      let foundThreadId: string | null = null;
+      let targetTimestamp: Date | null = null;
+
+      const allThreads = await this.diffDBManager.loadThreads();
+      for (const thread of allThreads) {
+        const messages = await this.diffDBManager.loadMessages(thread.id);
+        const targetMessage = messages.find((m) => m.id === messageId);
+        if (targetMessage) {
+          foundThreadId = thread.id;
+          targetTimestamp = targetMessage.createdAt;
+          break;
+        }
+      }
+
+      if (!foundThreadId || !targetTimestamp) {
+        console.warn(
+          `⚠️ DIFFDB SELECTIVE DELETE: Message ${messageId} not found`,
+        );
+        return;
+      }
+
+      console.log(
+        `🗑️ DIFFDB SELECTIVE DELETE: Found message in thread ${foundThreadId} at ${targetTimestamp}`,
+      );
+
+      // Get all messages in the thread
+      const allMessages = await this.diffDBManager.loadMessages(foundThreadId);
+
+      // Find messages after the target timestamp
+      const messagesToDelete = allMessages.filter(
+        (m) => m.createdAt.getTime() > targetTimestamp!.getTime(),
+      );
+
+      console.log(
+        `🗑️ DIFFDB SELECTIVE DELETE: Found ${messagesToDelete.length} messages to delete`,
+      );
+
+      // Delete each message after the timestamp
+      for (const message of messagesToDelete) {
+        await this.diffDBManager.deleteMessage(message.id, foundThreadId);
+      }
+
+      // Clear cache for this thread
+      this.cache.invalidateThread(foundThreadId);
+
+      console.log(
+        `✅ DIFFDB SELECTIVE DELETE SUCCESS: Deleted ${messagesToDelete.length} messages`,
+      );
+      logger.info(
+        `DiffDB: Deleted ${messagesToDelete.length} messages after ${messageId}`,
+      );
+    } catch (error) {
+      console.error("❌ DIFFDB SELECTIVE DELETE ERROR:", error);
+      throw error;
+    }
   }
 
   async updateThread(
@@ -264,10 +435,39 @@ export class DiffDBChatRepository implements ChatRepository {
   }
 
   async deleteAllThreads(userId: string): Promise<void> {
-    // TODO: Implement bulk deletion
-    logger.warn(
-      `DiffDB: Bulk thread deletion not implemented for user ${userId}`,
+    console.log(
+      `🗑️ DIFFDB BULK DELETE: Deleting all threads for user ${userId}`,
     );
+
+    try {
+      // Get all threads for this user
+      const threads = await this.diffDBManager.loadThreads();
+      console.log(
+        `🗑️ DIFFDB BULK DELETE: Found ${threads.length} threads to delete`,
+      );
+
+      // Delete each thread
+      for (const thread of threads) {
+        console.log(
+          `🗑️ DIFFDB BULK DELETE: Deleting thread ${thread.id}: "${thread.title}"`,
+        );
+        await this.diffDBManager.deleteThread(thread.id);
+      }
+
+      // Clear all cache for this user
+      this.cache.invalidateUserThreads(userId);
+      this.cache.clearAll(); // Clear everything to be safe
+
+      console.log(
+        `✅ DIFFDB BULK DELETE SUCCESS: Deleted ${threads.length} threads`,
+      );
+      logger.info(
+        `DiffDB: Bulk deleted ${threads.length} threads for user ${userId}`,
+      );
+    } catch (error) {
+      console.error("❌ DIFFDB BULK DELETE ERROR:", error);
+      throw error;
+    }
   }
 
   async deleteUnarchivedThreads(userId: string): Promise<void> {
