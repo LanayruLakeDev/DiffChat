@@ -5,45 +5,9 @@ import { DiffDBCache } from "./cache";
 import logger from "logger";
 
 /**
- * DiffDB implementation of Cha  async updateThread(
-    id: string,
-    thread: Partial<Omit<ChatThread, "createdAt" | "id">>,
-  ): Promise<ChatThread> {
-    console.log(`🔄 DIFFDB THREAD UPDATE: Updating thread ${id}`, thread);
-    
-    try {
-      // Get the existing thread
-      const existingThread = await this.selectThread(id);
-      if (!existingThread) {
-        throw new Error(`Thread ${id} not found`);
-      }
-
-      // Create updated thread
-      const updatedThread: ChatThread = {
-        ...existingThread,
-        ...thread,
-        id, // Keep original ID
-        createdAt: existingThread.createdAt, // Keep original creation date
-      };
-
-      console.log(`🔄 DIFFDB THREAD UPDATE: Old title: "${existingThread.title}"`);
-      console.log(`🔄 DIFFDB THREAD UPDATE: New title: "${updatedThread.title}"`);
-
-      // Update in GitHub timeline files
-      await this.diffDBManager.updateThreadInTimeline(id, updatedThread);
-      
-      // Update cache
-      this.cache.updateThread(updatedThread.userId, id, thread);
-      
-      console.log("✅ DIFFDB THREAD UPDATE SUCCESS: Thread updated in GitHub");
-      logger.info(`DiffDB: Updated thread ${id}`);
-      
-      return updatedThread;
-    } catch (error) {
-      console.error("❌ DIFFDB THREAD UPDATE ERROR:", error);
-      throw error;
-    }
-  } Replaces PostgreSQL with GitHub-based storage
+/**
+ * DiffDB implementation of ChatRepository
+ * Replaces PostgreSQL with GitHub-based storage
  */
 export class DiffDBChatRepository implements ChatRepository {
   private diffDBManager: DiffDBManager;
@@ -421,17 +385,46 @@ export class DiffDBChatRepository implements ChatRepository {
 
   async updateThread(
     id: string,
-    _thread: Partial<Omit<ChatThread, "createdAt" | "id">>,
+    thread: Partial<Omit<ChatThread, "createdAt" | "id">>,
   ): Promise<ChatThread> {
-    // TODO: Implement thread updates in timeline files
-    logger.warn(`DiffDB: Thread updates not fully implemented for ${id}`);
+    console.log(`🔄 DIFFDB THREAD UPDATE: Updating thread ${id}`, thread);
 
-    // For now, return the existing thread
-    const existing = await this.selectThread(id);
-    if (!existing) {
-      throw new Error(`Thread ${id} not found`);
+    try {
+      // Get the existing thread
+      const existingThread = await this.selectThread(id);
+      if (!existingThread) {
+        throw new Error(`Thread ${id} not found`);
+      }
+
+      // Create updated thread
+      const updatedThread: ChatThread = {
+        ...existingThread,
+        ...thread,
+        id, // Keep original ID
+        createdAt: existingThread.createdAt, // Keep original creation date
+      };
+
+      console.log(
+        `🔄 DIFFDB THREAD UPDATE: Old title: "${existingThread.title}"`,
+      );
+      console.log(
+        `🔄 DIFFDB THREAD UPDATE: New title: "${updatedThread.title}"`,
+      );
+
+      // Update in GitHub timeline files
+      await this.diffDBManager.updateThreadInTimeline(id, updatedThread);
+
+      // Update cache
+      this.cache.updateThread(updatedThread.userId, id, thread);
+
+      console.log("✅ DIFFDB THREAD UPDATE SUCCESS: Thread updated in GitHub");
+      logger.info(`DiffDB: Updated thread ${id}`);
+
+      return updatedThread;
+    } catch (error) {
+      console.error("❌ DIFFDB THREAD UPDATE ERROR:", error);
+      throw error;
     }
-    return existing;
   }
 
   async deleteAllThreads(userId: string): Promise<void> {
