@@ -18,7 +18,13 @@ export function useGenerateThreadTitle(option: {
   const updateTitle = useCallback(
     (title: string) => {
       appStore.setState((prev) => {
-        if (prev.threadList.some((v) => v.id !== option.threadId)) {
+        // Check if this thread already exists in the list
+        const existingThreadIndex = prev.threadList.findIndex(
+          (v) => v.id === option.threadId,
+        );
+
+        if (existingThreadIndex === -1) {
+          // Thread doesn't exist, add it to the beginning of the list
           return {
             threadList: [
               {
@@ -30,13 +36,14 @@ export function useGenerateThreadTitle(option: {
               ...prev.threadList,
             ],
           };
+        } else {
+          // Thread exists, update its title
+          return {
+            threadList: prev.threadList.map((v) =>
+              v.id === option.threadId ? { ...v, title } : v,
+            ),
+          };
         }
-
-        return {
-          threadList: prev.threadList.map((v) =>
-            v.id === option.threadId ? { ...v, title } : v,
-          ),
-        };
       });
     },
     [option.threadId, option.chatModel?.model, option.chatModel?.provider],
