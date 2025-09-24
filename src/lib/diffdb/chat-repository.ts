@@ -231,7 +231,8 @@ export class DiffDBChatRepository implements ChatRepository {
     }
 
     console.log("✅ DIFFDB THREAD DETAILS: Thread found, loading messages...");
-    const messages = await this.diffDBManager.loadMessages(id);
+    // 🔥 FIX: Use the cache-optimized message loading method instead of direct loadMessages
+    const messages = await this.selectMessagesByThreadId(id);
 
     console.log("🔍 DIFFDB THREAD DETAILS: Messages loaded:");
     console.log("  📊 Message count:", messages.length);
@@ -278,6 +279,11 @@ export class DiffDBChatRepository implements ChatRepository {
     if (cachedMessages) {
       console.log("⚡ CACHE SUCCESS: Returning cached messages");
       console.log("⚡ PERFORMANCE: Instant response from cache");
+      console.log("  📊 Cached message count:", cachedMessages.length);
+      console.log(
+        "  💬 Cached message IDs:",
+        cachedMessages.map((m) => m.id.slice(0, 8)),
+      );
       return cachedMessages;
     }
 
@@ -293,9 +299,22 @@ export class DiffDBChatRepository implements ChatRepository {
       `🌐 GITHUB API: Loaded ${messages.length} messages in ${loadTime}ms`,
     );
 
-    // Store in cache - EXTENDED TTL for better performance
-    console.log("💾 CACHE UPDATE: Storing messages in cache...");
-    this.cache.setMessages(threadId, messages);
+    // 🔥 CRITICAL: Ensure messages are properly cached
+    if (messages.length > 0) {
+      console.log("💾 CACHE UPDATE: Storing messages in cache...");
+      this.cache.setMessages(threadId, messages);
+      console.log("✅ CACHE UPDATE: Messages stored successfully");
+
+      // Double-check cache was set correctly
+      const verifyCache = this.cache.getMessages(threadId);
+      console.log(
+        "🔍 CACHE VERIFICATION: Stored",
+        verifyCache?.length || 0,
+        "messages",
+      );
+    } else {
+      console.log("⚠️ CACHE SKIP: No messages to cache (empty result)");
+    }
 
     console.log(
       "✅ DIFFDB MESSAGES SELECT SUCCESS: Returning messages with cache update",
