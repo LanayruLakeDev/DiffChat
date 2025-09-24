@@ -118,10 +118,45 @@ export async function POST(request: Request) {
       return new Response("Forbidden", { status: 403 });
     }
 
+    // 🔥 CRITICAL DEBUG: Check if messages are actually loaded
+    console.log("🔍 CRITICAL DEBUG: Thread messages analysis:");
+    console.log("  📊 Total messages:", thread?.messages?.length || 0);
+    if (thread?.messages && thread.messages.length > 0) {
+      console.log(
+        "  💬 Message IDs:",
+        thread.messages.map((m) => m.id.slice(0, 8)),
+      );
+      console.log(
+        "  👤 Message roles:",
+        thread.messages.map((m) => m.role),
+      );
+      console.log(
+        "  📝 Last message preview:",
+        thread.messages[thread.messages.length - 1]?.parts?.[0]?.type,
+      );
+    } else {
+      console.log("  ❌ NO MESSAGES FOUND - This is the root cause!");
+    }
+
     // if is false, it means the last message is manual tool execution
     const isLastMessageUserMessage = message.role == "user";
 
     const previousMessages = (thread?.messages ?? []).map(convertToMessage);
+
+    // 🔥 CRITICAL DEBUG: Check if messages are converted correctly
+    console.log("🔍 CRITICAL DEBUG: Previous messages for AI context:");
+    console.log("  📊 Converted messages count:", previousMessages.length);
+    if (previousMessages.length > 0) {
+      console.log(
+        "  💬 Previous message roles:",
+        previousMessages.map((m) => m.role),
+      );
+      console.log("  🎯 AI will have full conversation context!");
+    } else {
+      console.log(
+        "  ❌ NO PREVIOUS MESSAGES - AI has no context! This is the bug!",
+      );
+    }
 
     const messages: Message[] = isLastMessageUserMessage
       ? appendClientMessage({

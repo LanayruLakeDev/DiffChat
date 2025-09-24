@@ -219,12 +219,37 @@ export class DiffDBChatRepository implements ChatRepository {
   }
 
   async selectThreadDetails(id: string) {
-    const thread = await this.selectThread(id);
-    if (!thread) return null;
+    console.log(
+      "🔍 DIFFDB THREAD DETAILS: Starting selectThreadDetails for:",
+      id,
+    );
 
+    const thread = await this.selectThread(id);
+    if (!thread) {
+      console.log("❌ DIFFDB THREAD DETAILS: Thread not found");
+      return null;
+    }
+
+    console.log("✅ DIFFDB THREAD DETAILS: Thread found, loading messages...");
     const messages = await this.diffDBManager.loadMessages(id);
 
-    return {
+    console.log("🔍 DIFFDB THREAD DETAILS: Messages loaded:");
+    console.log("  📊 Message count:", messages.length);
+    if (messages.length > 0) {
+      console.log(
+        "  💬 Message IDs:",
+        messages.map((m) => m.id.slice(0, 8)),
+      );
+      console.log(
+        "  👤 Message roles:",
+        messages.map((m) => m.role),
+      );
+      console.log("  🎯 CONTEXT WILL BE PROVIDED TO AI!");
+    } else {
+      console.log("  ❌ NO MESSAGES LOADED - This breaks AI context!");
+    }
+
+    const result = {
       id: thread.id,
       title: thread.title,
       userId: thread.userId,
@@ -232,6 +257,13 @@ export class DiffDBChatRepository implements ChatRepository {
       userPreferences: undefined, // TODO: Load from DiffDB user preferences
       messages,
     };
+
+    console.log(
+      "✅ DIFFDB THREAD DETAILS: Returning thread with",
+      messages.length,
+      "messages",
+    );
+    return result;
   }
 
   async selectMessagesByThreadId(threadId: string): Promise<ChatMessage[]> {
