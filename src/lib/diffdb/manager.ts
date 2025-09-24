@@ -198,15 +198,31 @@ export class DiffDBManager {
       const threadMarker = `#### Thread: ${threadTitle} (${message.threadId})`;
       const messageTimestamp = date.toISOString();
 
-      // Convert message parts to markdown
+      // Convert message parts to markdown with complete data preservation
       const messageContent = message.parts
         .map((part) => {
           if (part.type === "text") {
             return part.text;
           } else if (part.type === "tool-invocation") {
-            return `🔧 **Tool**: ${part.toolInvocation.toolName}\n\`\`\`json\n${JSON.stringify(part.toolInvocation.args, null, 2)}\n\`\`\``;
+            // Preserve complete tool invocation data for proper reconstruction
+            // Use safe property access to handle different ToolInvocation states
+            const toolData = {
+              toolCallId: part.toolInvocation.toolCallId,
+              toolName: part.toolInvocation.toolName,
+              state: part.toolInvocation.state,
+              args: part.toolInvocation.args,
+              // Handle result property safely - it might not exist in all states
+              result: (part.toolInvocation as any).result,
+              // Add timestamp for debugging
+              _timestamp: new Date().toISOString(),
+              // Include step info if available
+              step: (part.toolInvocation as any).step,
+            };
+            return `🔧 **TOOL_INVOCATION_JSON**\n\`\`\`json\n${JSON.stringify(toolData, null, 2)}\n\`\`\``;
+          } else {
+            // Handle any other part types with complete JSON preservation
+            return `🔧 **PART_JSON**\n\`\`\`json\n${JSON.stringify(part, null, 2)}\n\`\`\``;
           }
-          return JSON.stringify(part);
         })
         .join("\n\n");
 
@@ -506,52 +522,78 @@ ${messageContent}
    * Parse markdown message content back to message parts
    */
   private parseMessageContent(content: string): any[] {
-    // Simple parsing - can be enhanced
-    if (content.includes("🔧 **Tool Call**:")) {
-      // Tool call message
-      const toolMatch = content.match(
-        /🔧 \*\*Tool Call\*\*: (.+?)\n```json\n([\s\S]*?)\n```/,
-      );
-      if (toolMatch) {
-        return [
-          {
-            type: "tool-call",
-            toolCallId: nanoid(),
-            toolName: toolMatch[1],
-            args: JSON.parse(toolMatch[2]),
+    const parts: any[] = [];
+    let remainingContent = content;
+
+    // Handle tool invocations with complete state preservation
+    const toolMatches = [
+      ...remainingContent.matchAll(
+        /🔧 \*\*TOOL_INVOCATION_JSON\*\*\n```json\n([\s\S]*?)\n```/g,
+      ),
+    ];
+
+    for (const match of toolMatches) {
+      try {
+        const toolData = JSON.parse(match[1]);
+        parts.push({
+          type: "tool-invocation",
+          toolInvocation: {
+            toolCallId: toolData.toolCallId,
+            toolName: toolData.toolName,
+            state: toolData.state || "call",
+            args: toolData.args || {},
+            // Only include result if it exists
+            ...(toolData.result !== undefined && { result: toolData.result }),
+            // Only include step if it exists
+            ...(toolData.step !== undefined && { step: toolData.step }),
           },
-        ];
+        });
+        // Remove from content to avoid duplicate parsing
+        remainingContent = remainingContent.replace(match[0], "");
+      } catch (error) {
+        console.warn("Failed to parse tool invocation JSON:", error);
       }
-    } else if (content.includes("📊 **Tool Result**:")) {
-      // Tool result message
-      const resultMatch = content.match(
-        /📊 \*\*Tool Result\*\*: (.+?)\n```\n([\s\S]*?)\n```/,
-      );
-      if (resultMatch) {
-        return [
-          {
-            type: "tool-result",
-            toolCallId: resultMatch[1],
-            result: resultMatch[2],
-          },
-        ];
-      }
-    } else {
-      // Regular text message
-      return [
-        {
-          type: "text",
-          text: content,
-        },
-      ];
     }
 
-    return [
-      {
-        type: "text",
-        text: content,
-      },
+    // Handle other part types
+    const partMatches = [
+      ...remainingContent.matchAll(
+        /� \*\*PART_JSON\*\*\n```json\n([\s\S]*?)\n```/g,
+      ),
     ];
+
+    for (const match of partMatches) {
+      try {
+        const partData = JSON.parse(match[1]);
+        parts.push(partData);
+        remainingContent = remainingContent.replace(match[0], "");
+      } catch (error) {
+        console.warn("Failed to parse part JSON:", error);
+      }
+    }
+
+    // Handle remaining text content (clean up any remaining markdown artifacts)
+    const cleanContent = remainingContent
+      .replace(/🔧 \*\*Tool\*\*:.*?```json[\s\S]*?```/g, "") // Remove old format
+      .replace(/📊 \*\*Tool Result\*\*:.*?```[\s\S]*?```/g, "") // Remove old format
+      .trim();
+
+    if (cleanContent) {
+      parts.push({
+        type: "text",
+        text: cleanContent,
+      });
+    }
+
+    // If no parts were parsed, return a basic text part
+    return parts.length > 0
+      ? parts
+      : [
+          {
+            type: "text",
+            text: content,
+          },
+        ];
   }
 
   /**
