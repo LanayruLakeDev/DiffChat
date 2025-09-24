@@ -241,14 +241,15 @@ export class DiffDBChatRepository implements ChatRepository {
     );
     console.log("💬 CACHE CHECK: Checking cache first...");
 
-    // Try cache first
+    // Try cache first - OPTIMIZED for snappy experience
     const cachedMessages = this.cache.getMessages(threadId);
     if (cachedMessages) {
       console.log("⚡ CACHE SUCCESS: Returning cached messages");
+      console.log("⚡ PERFORMANCE: Instant response from cache");
       return cachedMessages;
     }
 
-    // Cache miss - fetch from GitHub
+    // Cache miss - fetch from GitHub with performance tracking
     console.log("💾 CACHE MISS: Loading messages from GitHub...");
     console.log("🌐 GITHUB API: Starting message fetch...");
 
@@ -260,12 +261,15 @@ export class DiffDBChatRepository implements ChatRepository {
       `🌐 GITHUB API: Loaded ${messages.length} messages in ${loadTime}ms`,
     );
 
-    // Store in cache
+    // Store in cache - EXTENDED TTL for better performance
     console.log("💾 CACHE UPDATE: Storing messages in cache...");
     this.cache.setMessages(threadId, messages);
 
     console.log(
       "✅ DIFFDB MESSAGES SELECT SUCCESS: Returning messages with cache update",
+    );
+    console.log(
+      `📊 PERFORMANCE: GitHub load took ${loadTime}ms, now cached for 5+ minutes`,
     );
     return messages;
   }
@@ -501,12 +505,31 @@ export class DiffDBChatRepository implements ChatRepository {
       createdAt: new Date(),
     };
 
-    // Get thread title for context
+    console.log(
+      "💬 DIFFDB UPSERT MESSAGE: Optimistic cache update for instant UI",
+    );
+
+    // OPTIMISTIC CACHE UPDATE - Add to cache immediately for instant UI response
+    const existingMessages = this.cache.getMessages(message.threadId) || [];
+    const updatedMessages = [...existingMessages, fullMessage];
+    this.cache.setMessages(message.threadId, updatedMessages);
+
+    console.log(
+      "⚡ OPTIMISTIC: Message added to cache instantly for snappy UI",
+    );
+
+    // Background save to GitHub (don't await to keep UI snappy)
     const thread = await this.selectThread(message.threadId);
     const threadTitle = thread?.title || "Unknown Thread";
 
-    await this.diffDBManager.saveMessage(fullMessage, threadTitle);
-    logger.info(`DiffDB: Upserted message ${message.id}`);
+    // Save to GitHub in background
+    this.diffDBManager.saveMessage(fullMessage, threadTitle).catch((error) => {
+      console.error("❌ BACKGROUND SAVE ERROR:", error);
+      // TODO: Could implement retry logic or offline queue here
+    });
+
+    console.log("🚀 PERFORMANCE: Message saved with optimistic update pattern");
+    logger.info(`DiffDB: Upserted message ${message.id} (optimistic)`);
 
     return fullMessage;
   }

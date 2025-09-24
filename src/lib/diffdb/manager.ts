@@ -1,7 +1,6 @@
 import { GitHubApiClient } from "./github-api";
 import { ChatThread, ChatMessage } from "app-types/chat";
 import logger from "logger";
-import { nanoid } from "nanoid";
 
 export interface DiffDBUser {
   id: string;
@@ -227,7 +226,7 @@ export class DiffDBManager {
         .join("\n\n");
 
       const messageEntry = `
-##### ${message.role === "user" ? "👤 User" : "🤖 Assistant"} (${messageTimestamp})
+##### ${message.role === "user" ? "👤 User" : "🤖 Assistant"} (${messageTimestamp}) [${message.id}]
 ${messageContent}
 
 ---
@@ -479,21 +478,22 @@ ${messageContent}
             ? content.slice(threadStart)
             : content.slice(threadStart, nextThreadStart);
 
-        // Parse messages
+        // Parse messages - NEW FORMAT with message IDs
         const messageMatches = threadContent.matchAll(
-          /##### (👤 User|🤖 Assistant) \(([^)]+)\)\n([\s\S]*?)(?=\n---|$)/g,
+          /##### (👤 User|🤖 Assistant) \(([^)]+)\) \[([^\]]+)\]\n([\s\S]*?)(?=\n---|$)/g,
         );
 
         for (const match of messageMatches) {
           const role = match[1].includes("User") ? "user" : "assistant";
           const timestamp = match[2];
-          const messageContent = match[3].trim();
+          const messageId = match[3]; // Extract the original message ID
+          const messageContent = match[4].trim();
 
           // Convert markdown back to message parts
           const parts = this.parseMessageContent(messageContent);
 
           messages.push({
-            id: nanoid(),
+            id: messageId, // Use the original message ID for perfect continuity
             threadId,
             role,
             parts,
