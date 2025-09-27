@@ -67,17 +67,26 @@ export async function generateTitleFromUserMessageAction({
 export async function selectThreadWithMessagesAction(threadId: string) {
   const session = await getSession();
   const chatRepository = await getChatRepository();
-  const thread = await chatRepository.selectThread(threadId);
 
-  if (!thread) {
+  // 🔥 FIX: Use the SAME method that Chat API uses for consistency
+  const threadWithMessages = await chatRepository.selectThreadDetails(threadId);
+
+  if (!threadWithMessages) {
     logger.error("Thread not found", threadId);
     return null;
   }
-  if (thread.userId !== session?.user.id) {
+  if (threadWithMessages.userId !== session?.user.id) {
     return null;
   }
-  const messages = await chatRepository.selectMessagesByThreadId(threadId);
-  return { ...thread, messages: messages ?? [] };
+
+  // Return in the same format expected by frontend
+  return {
+    id: threadWithMessages.id,
+    title: threadWithMessages.title,
+    userId: threadWithMessages.userId,
+    createdAt: threadWithMessages.createdAt,
+    messages: threadWithMessages.messages ?? [],
+  };
 }
 
 export async function deleteMessageAction(messageId: string) {
