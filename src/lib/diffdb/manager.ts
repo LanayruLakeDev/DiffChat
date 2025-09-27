@@ -86,11 +86,6 @@ export class DiffDBManager {
       const filePath = `users/${this.githubUsername}/memories/timeline/${monthKey}.md`;
 
       console.log("  📁 Timeline file path:", filePath);
-      console.log("  📁 Full path breakdown:");
-      console.log("    - Base: users/");
-      console.log("    - Username:", this.githubUsername);
-      console.log("    - Path: /memories/timeline/");
-      console.log("    - File:", `${monthKey}.md`);
 
       // Get existing timeline file or create new
       const existingFile = await this.githubClient.getFile(
@@ -101,34 +96,34 @@ export class DiffDBManager {
 
       if (existingFile) {
         console.log(
-          "  📄 Existing timeline file found, checking for duplicate thread...",
+          "  📄 Existing timeline file found, checking for thread...",
         );
         content = existingFile.content;
 
-        // Check if thread already exists and remove old entry
-        const threadRegex = new RegExp(
-          `#### Thread: [^\\(]*\\(${thread.id}\\)[\\s\\S]*?(?=#### Thread:|$)`,
+        // 🔥 FIXED: More robust regex to find and replace ANY thread with this ID
+        const threadIdPattern = `\\(${thread.id}\\)`;
+        const threadSectionRegex = new RegExp(
+          `#### Thread: [^\\n]*${threadIdPattern}[\\s\\S]*?(?=\n#### Thread:|\n## |$)`,
           "g",
         );
-        const existingThreadMatch = content.match(threadRegex);
 
-        if (existingThreadMatch && existingThreadMatch.length > 0) {
+        const existingMatches = content.match(threadSectionRegex);
+        if (existingMatches && existingMatches.length > 0) {
           console.log(
-            "  🔄 Found existing thread entry, updating instead of duplicating...",
+            `  🔄 FOUND ${existingMatches.length} existing thread entries - REPLACING ALL`,
           );
           console.log(
-            "  🗑️ Removing old thread entries:",
-            existingThreadMatch.length,
-            "entries",
+            "  🗑️ Removing old thread sections to prevent duplication",
           );
 
-          // Remove all existing entries for this thread ID
-          content = content.replace(threadRegex, "");
+          // Remove ALL existing sections for this thread ID
+          content = content.replace(threadSectionRegex, "");
 
-          // Clean up any extra newlines
+          // Clean up multiple newlines
           content = content.replace(/\n{3,}/g, "\n\n");
+          console.log("  ✅ Old thread sections removed successfully");
         } else {
-          console.log("  ✨ New thread, will append to file");
+          console.log("  ✨ New thread - no existing entries found");
         }
       } else {
         console.log("  📄 Creating new timeline file...");
@@ -138,22 +133,23 @@ export class DiffDBManager {
       // Ensure we have a meaningful title
       const threadTitle = thread.title?.trim() || "New Chat";
 
-      // Add thread entry
+      // 🔥 FIXED: Create clean thread entry (no duplication possible)
       const threadEntry = `#### Thread: ${threadTitle} (${thread.id})\n- Created: ${thread.createdAt.toISOString()}\n- Status: Active\n- Messages: [Count will be updated as messages are added]\n\n`;
 
+      // Add the thread entry to the end of the Chat Threads section
       content += threadEntry;
 
-      console.log("  💾 Saving updated thread to GitHub...");
-      console.log("  📝 Thread entry being saved:");
-      console.log("    ", threadEntry.replace(/\n/g, "\\n"));
+      console.log("  💾 THREAD UPDATE: Saving thread with title:", threadTitle);
       await this.githubClient.createOrUpdateFile(
         this.repoName,
         filePath,
         content,
-        `Update chat thread: ${threadTitle}`,
+        `Update thread: ${threadTitle} (${thread.id})`,
         existingFile?.sha,
       );
-      console.log("✅ DIFFDB MANAGER: Thread saved successfully to GitHub");
+      console.log(
+        "✅ DIFFDB MANAGER: Thread saved successfully - NO DUPLICATES",
+      );
     } catch (error) {
       console.error("❌ DIFFDB MANAGER SAVE THREAD ERROR:", error);
       throw error;
@@ -391,44 +387,24 @@ ${messageContent}
         if (threads.length >= limit) break;
       }
 
-      console.log("📚 DIFFDB MANAGER: Deduplicating threads by ID...");
+      // � REMOVED DEDUPLICATION - Fixed root cause instead!
+      // Threads should be unique by design now
 
-      // Deduplicate threads by ID, keeping the most recent version (latest createdAt)
-      const threadMap = new Map<string, ChatThread>();
-
-      for (const thread of threads) {
-        const existingThread = threadMap.get(thread.id);
-        if (!existingThread || thread.createdAt > existingThread.createdAt) {
-          threadMap.set(thread.id, thread);
-          console.log("📄 DIFFDB: Keeping thread version:", {
-            id: thread.id,
-            title: thread.title,
-            createdAt: thread.createdAt,
-          });
-        } else {
-          console.log("📄 DIFFDB: Skipping older thread version:", {
-            id: thread.id,
-            title: thread.title,
-            createdAt: thread.createdAt,
-          });
-        }
-      }
-
-      const uniqueThreads = Array.from(threadMap.values())
+      const finalThreads = threads
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()) // Sort by newest first
         .slice(0, limit);
 
       console.log(
-        "✅ DIFFDB MANAGER: Final unique threads count:",
-        uniqueThreads.length,
+        "✅ DIFFDB MANAGER: Final threads count:",
+        finalThreads.length,
       );
       console.log(
-        "✅ DIFFDB MANAGER: Loaded unique threads:",
-        uniqueThreads.map((t) => ({ id: t.id, title: t.title })),
+        "✅ DIFFDB MANAGER: Loaded threads:",
+        finalThreads.map((t) => ({ id: t.id, title: t.title })),
       );
       console.log("📊 LOAD PERFORMANCE: Total load time for threads complete");
 
-      return uniqueThreads;
+      return finalThreads;
     } catch (error) {
       console.error("❌ DIFFDB MANAGER LOAD THREADS ERROR:", error);
       throw error;

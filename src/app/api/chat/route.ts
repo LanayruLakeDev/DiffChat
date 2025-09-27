@@ -284,10 +284,38 @@ export async function POST(request: Request) {
         );
         logger.info(`model: ${chatModel?.provider}/${chatModel?.model}`);
 
+        // 🔥 CRITICAL DEBUG: What messages is the AI actually receiving?
+        console.log("🤖 AI API CALL DEBUG: Messages being sent to AI:");
+        console.log("  📊 Total messages for AI:", messages.length);
+        console.log(
+          "  💬 Message roles:",
+          messages.map((m) => m.role),
+        );
+        console.log(
+          "  📝 Message IDs:",
+          messages.map((m) => m.id?.slice(0, 8) || "no-id"),
+        );
+
+        if (messages.length > 1) {
+          console.log("  ✅ AI HAS CONVERSATION HISTORY!");
+          console.log(
+            "  📖 First message parts:",
+            messages[0]?.parts?.length || 0,
+          );
+          console.log(
+            "  📖 Latest message parts:",
+            messages[messages.length - 1]?.parts?.length || 0,
+          );
+        } else {
+          console.log(
+            "  ❌ AI HAS NO HISTORY - Only current message! This is the bug!",
+          );
+        }
+
         const result = streamText({
           model,
           system: systemPrompt,
-          messages,
+          messages, // ← This is what the AI gets - we're debugging above
           maxSteps: 10,
           toolCallStreaming: true,
           experimental_transform: smoothStream({ chunking: "word" }),
