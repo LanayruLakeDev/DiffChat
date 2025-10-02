@@ -64,6 +64,14 @@ export const auth = betterAuth({
     github: {
       clientId: process.env.GITHUB_CLIENT_ID || "",
       clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+      // ⭐ CRITICAL: Repository access permissions for DiffDB
+      // Full repository access + user info for GitHub-as-database
+      scope: ["repo", "user:email", "read:user"] as string[],
+      // Force consent screen to show permissions clearly
+      extraAuthParams: {
+        prompt: "consent",
+        allow_signup: "true",
+      },
     },
     google: {
       prompt: "select_account",

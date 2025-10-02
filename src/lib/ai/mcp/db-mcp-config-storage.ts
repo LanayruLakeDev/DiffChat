@@ -29,7 +29,28 @@ export function createDbBasedMCPConfigsStorage(): MCPConfigStorage {
   async function checkAndRefreshClients() {
     try {
       logger.info("Checking MCP clients Diff");
-      const servers = await mcpRepository.selectAll();
+
+      // Try to get MCP servers, but handle case where no session is available
+      let servers;
+      try {
+        servers = await mcpRepository.selectAll();
+      } catch (error) {
+        // If no session or GitHub access, use empty array for now
+        if (
+          error instanceof Error &&
+          (error.message.includes("No active user session") ||
+            error.message.includes("User not authenticated") ||
+            error.message.includes("headers"))
+        ) {
+          logger.warn(
+            "MCP Config Storage: No user session available, skipping MCP server loading",
+          );
+          servers = [];
+        } else {
+          throw error;
+        }
+      }
+
       const dbConfigs = servers
         .map((server) => ({
           id: server.id,
