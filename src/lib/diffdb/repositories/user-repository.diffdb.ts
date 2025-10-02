@@ -47,14 +47,18 @@ export function createDiffDBUserRepository(
     ): Promise<UserProfile> {
       const now = new Date().toISOString();
 
-      const newUser: UserProfile = {
-        ...userData,
-        preferences: {
+      const preferences = Object.assign(
+        {
           theme: "dark",
           language: "en",
           notifications: true,
-          ...(userData.preferences || {}),
         },
+        userData.preferences || {},
+      ) as UserProfile["preferences"];
+
+      const newUser: UserProfile = {
+        ...userData,
+        preferences,
         createdAt: now,
         updatedAt: now,
       };

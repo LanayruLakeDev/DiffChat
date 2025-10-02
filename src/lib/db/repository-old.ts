@@ -1,5 +1,5 @@
 // DiffDB-only imports (no PostgreSQL fallback)
-import { isDiffDBEnabled, initializeDiffDB } from "../diffdb";
+import { isDiffDBEnabled } from "../diffdb";
 import { getGitHubAccessToken } from "../auth/github-helper";
 import { getSession } from "../auth/server";
 import { ChatRepository } from "app-types/chat";

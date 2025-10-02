@@ -48,11 +48,9 @@ export interface DiffDBCommitResult {
  */
 export class DiffDBClient {
   private octokit: Octokit;
-  private accessToken: string;
   private username: string | null = null;
 
   constructor(accessToken: string) {
-    this.accessToken = accessToken;
     this.octokit = new Octokit({
       auth: accessToken,
       userAgent: "Luminar-AI-DiffDB/1.0",
@@ -128,8 +126,6 @@ export class DiffDBClient {
           description ||
           `Luminar AI Data Storage - ${new Date().toISOString()}`,
         auto_init: false, // Don't auto-create README - we'll create our own structure
-        gitignore_template: null,
-        license_template: null,
       });
 
       return {
@@ -470,7 +466,7 @@ DiffDB allows Luminar AI to use GitHub repositories as a database backend, givin
       const user = await this.getAuthenticatedUser();
 
       // Test repository access by listing repositories
-      const _repos = await this.octokit.repos.listForAuthenticatedUser({
+      await this.octokit.repos.listForAuthenticatedUser({
         per_page: 1,
       });
 

@@ -7,6 +7,8 @@ import { createDiffDBChatRepository } from "../diffdb/repositories/chat-reposito
 import { createDiffDBArchiveRepository } from "../diffdb/repositories/archive-repository.diffdb";
 import { createDiffDBUserRepository } from "../diffdb/repositories/user-repository.diffdb";
 import { createDiffDBMcpRepository } from "../diffdb/repositories/mcp-repository.diffdb";
+import { createDiffDBMcpServerCustomizationRepository } from "../diffdb/repositories/mcp-server-customization-repository.diffdb";
+import { createDiffDBMcpToolCustomizationRepository } from "../diffdb/repositories/mcp-tool-customization-repository.diffdb";
 import { createDiffDBWorkflowRepository } from "../diffdb/repositories/workflow-repository.diffdb";
 import { createDiffDBAgentRepository } from "../diffdb/repositories/agent-repository.diffdb";
 import { DiffDBClient } from "../diffdb/client";
@@ -27,6 +29,8 @@ const userRepositoryCache = new Map<
     archiveRepository: any;
     userRepository: any;
     mcpRepository: any;
+    mcpServerCustomizationRepository: any;
+    mcpToolCustomizationRepository: any;
     workflowRepository: any;
     agentRepository: any;
     lastAccessed: number;
@@ -93,6 +97,10 @@ async function getUserRepositories() {
       archiveRepository: createDiffDBArchiveRepository(diffdbClient, repoName),
       userRepository: createDiffDBUserRepository(diffdbClient, repoName),
       mcpRepository: createDiffDBMcpRepository(diffdbClient, repoName),
+      mcpServerCustomizationRepository:
+        createDiffDBMcpServerCustomizationRepository(diffdbClient, repoName),
+      mcpToolCustomizationRepository:
+        createDiffDBMcpToolCustomizationRepository(diffdbClient, repoName),
       workflowRepository: createDiffDBWorkflowRepository(
         diffdbClient,
         repoName,
@@ -164,35 +172,16 @@ export const agentRepository = createRepositoryProxy(async () => {
   return repos.agentRepository;
 });
 
-// MCP customization repositories (Phase 2 - minimal implementation)
-export const mcpMcpToolCustomizationRepository = {
-  async findAll(): Promise<any[]> {
-    return [];
+export const mcpMcpToolCustomizationRepository = createRepositoryProxy(
+  async () => {
+    const repos = await getUserRepositories();
+    return repos.mcpToolCustomizationRepository;
   },
-  async findById(_id: string): Promise<any> {
-    return null;
-  },
-  async create(customization: any): Promise<any> {
-    return customization;
-  },
-  async update(_id: string, customization: any): Promise<any> {
-    return customization;
-  },
-  async delete(_id: string): Promise<void> {},
-};
+);
 
-export const mcpServerCustomizationRepository = {
-  async findAll(): Promise<any[]> {
-    return [];
+export const mcpServerCustomizationRepository = createRepositoryProxy(
+  async () => {
+    const repos = await getUserRepositories();
+    return repos.mcpServerCustomizationRepository;
   },
-  async findById(_id: string): Promise<any> {
-    return null;
-  },
-  async create(customization: any): Promise<any> {
-    return customization;
-  },
-  async update(_id: string, customization: any): Promise<any> {
-    return customization;
-  },
-  async delete(_id: string): Promise<void> {},
-};
+);

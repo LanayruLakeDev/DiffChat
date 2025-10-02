@@ -9,10 +9,7 @@
 "use server";
 
 import { getSession } from "@/lib/auth/server";
-import {
-  getGitHubAccessToken,
-  validateGitHubAuth,
-} from "@/lib/auth/github-helper";
+import { validateGitHubAuth } from "@/lib/auth/github-helper";
 import {
   initializeDiffDB,
   isDiffDBEnabled,
@@ -121,8 +118,10 @@ export async function checkGitHubAuthAction() {
     let hasGitHubAuth = false;
     let hasRepoPermissions = false;
 
-    if (session.user.accounts) {
-      const githubAccount = session.user.accounts.find(
+    const sessionUser = session.user as any;
+
+    if (sessionUser?.accounts) {
+      const githubAccount = sessionUser.accounts.find(
         (account: any) => account.providerId === "github",
       );
 

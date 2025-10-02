@@ -27,7 +27,6 @@ export function createDiffDBAgentRepository(
   repositoryName: string,
 ) {
   const AGENTS_PATH = "agents";
-  const _PUBLIC_AGENTS_PATH = "public_agents";
 
   return {
     async selectAgentById(id: string, userId: string): Promise<Agent | null> {
