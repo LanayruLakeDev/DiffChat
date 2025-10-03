@@ -76,14 +76,18 @@ export function GitHubDatabaseWrapper({
 
         if (result.success && result.data?.repositoryExists) {
           // Repo exists! Mark as complete and skip onboarding
-          markAsCompleted(result.data.repositoryName || "luminar-ai-data");
-          setAppReady(true);
+          const repoName = result.data.repositoryName || "luminar-ai-data";
+          markAsCompleted(repoName);
+          setAppReady(true); // Set BEFORE marking done to ensure app loads
+          setSilentCheckDone(true);
+          return;
         }
       } catch (error) {
         console.log("Silent repo check failed, will show onboarding:", error);
-      } finally {
-        setSilentCheckDone(true);
       }
+
+      // Only mark as done if we didn't find the repo
+      setSilentCheckDone(true);
     };
 
     checkRepo();
@@ -157,6 +161,13 @@ export function GitHubDatabaseWrapper({
   }
 
   /**
+   * App ready - show main content immediately
+   */
+  if (appReady || (setupStatus.hasGitKey && setupStatus.setupCompleted)) {
+    return <>{children}</>;
+  }
+
+  /**
    * Show onboarding if needed (only after silent check completes)
    */
   if (shouldShowOnboarding && userId && silentCheckDone) {
@@ -170,21 +181,29 @@ export function GitHubDatabaseWrapper({
   }
 
   /**
-   * App ready - show main content
+   * Still checking - show loading
    */
-  if (appReady || (setupStatus.hasGitKey && setupStatus.setupCompleted)) {
-    return <>{children}</>;
+  if (!silentCheckDone) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-blue-500" />
+          <p className="text-muted-foreground">Checking your database...</p>
+        </div>
+      </div>
+    );
   }
 
   /**
-   * Default loading state
+   * Fallback - should not normally reach here
    */
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto text-blue-500" />
-        <p className="text-muted-foreground">Preparing your database...</p>
-      </div>
-    </div>
-  );
+  console.warn("GitHubDatabaseWrapper: Unexpected state", {
+    appReady,
+    silentCheckDone,
+    shouldShowOnboarding,
+    userId,
+    setupStatus,
+  });
+
+  return <>{children}</>; // Show app as fallback instead of infinite loading
 }
