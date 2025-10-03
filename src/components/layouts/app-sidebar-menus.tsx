@@ -54,7 +54,7 @@ export function AppSidebarMenus() {
                   e.preventDefault();
                   setOpenMobile(false);
                   router.push(`/`);
-                  router.refresh();
+                  // Removed router.refresh() - causes unnecessary loading screen flash
                 }}
               >
                 <SidebarMenuButton className="flex font-semibold group/new-chat bg-input/20 border border-border/40">

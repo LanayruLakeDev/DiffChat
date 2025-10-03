@@ -36,6 +36,12 @@ export function GitHubDatabaseWrapper({
   const [error, setError] = useState<string>();
   const [silentCheckDone, setSilentCheckDone] = useState(false);
 
+  // Track if app has loaded once in this session to prevent loading flashes
+  const [hasLoadedBefore] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return sessionStorage.getItem("luminar-app-loaded") === "true";
+  });
+
   /**
    * Handle onboarding completion - immediately mark app as ready
    */
@@ -118,13 +124,17 @@ export function GitHubDatabaseWrapper({
     // If setup is complete, mark app as ready
     if (setupStatus.hasGitKey && setupStatus.setupCompleted) {
       setAppReady(true);
+      // Mark that app has loaded successfully in this session
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("luminar-app-loaded", "true");
+      }
     }
   }, [status, userId, setupStatus, onboardingLoading, silentCheckDone]);
 
   /**
-   * Loading state - only during actual authentication, not for checks
+   * Loading state - only show on initial load, not on navigations
    */
-  if (status === "loading") {
+  if (status === "loading" && !hasLoadedBefore) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
