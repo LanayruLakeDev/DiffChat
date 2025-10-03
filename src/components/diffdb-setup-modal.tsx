@@ -76,9 +76,10 @@ export function GitHubOnboardingModal({
   const [isProcessing, setIsProcessing] = useState(false);
   const [repositoryUrl, setRepositoryUrl] = useState<string>();
   const [retryCount, setRetryCount] = useState(0);
+  const [isVisible, setIsVisible] = useState(true); // Local state for immediate control
 
-  // Show modal if user needs onboarding
-  const shouldShow = !status.hasGitKey || !status.setupCompleted;
+  // Show modal if user needs onboarding AND not manually closed
+  const shouldShow = isVisible && (!status.hasGitKey || !status.setupCompleted);
 
   /**
    * Main setup process
@@ -115,8 +116,9 @@ export function GitHubOnboardingModal({
       const repoName = initResult.data?.repository?.name || "luminar-ai-data";
       markAsCompleted(repoName);
 
-      // Complete immediately - no fake delays
-      onComplete?.();
+      // Close modal immediately and notify parent
+      setIsVisible(false); // Hide modal first
+      onComplete?.(); // Then notify parent
     } catch (err: any) {
       setCurrentStep("error");
       const errorMessage = err.message || "Setup failed";

@@ -122,9 +122,9 @@ export function GitHubDatabaseWrapper({
   }, [status, userId, setupStatus, onboardingLoading, silentCheckDone]);
 
   /**
-   * Loading state - only show during initial authentication, not on every refresh
+   * Loading state - only during actual authentication, not for checks
    */
-  if (status === "loading" && !silentCheckDone) {
+  if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -181,17 +181,11 @@ export function GitHubDatabaseWrapper({
   }
 
   /**
-   * Still checking - show loading
+   * Silent check in progress - don't show loading, will resolve quickly
    */
   if (!silentCheckDone) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto text-blue-500" />
-          <p className="text-muted-foreground">Checking your database...</p>
-        </div>
-      </div>
-    );
+    // Return nothing - the check is fast (<1s), no need to flash loading screen
+    return null;
   }
 
   /**
