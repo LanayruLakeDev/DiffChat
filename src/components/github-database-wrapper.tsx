@@ -30,17 +30,17 @@ export function GitHubDatabaseWrapper({
 
   const { shouldShowOnboarding, isLoading: onboardingLoading } =
     useShowOnboarding(userId);
-  const { status: setupStatus, refresh } = useGitHubSetupStatus(userId);
+  const { status: setupStatus, markAsCompleted } = useGitHubSetupStatus(userId);
 
   const [appReady, setAppReady] = useState(false);
   const [error, setError] = useState<string>();
+  const [silentCheckDone, setSilentCheckDone] = useState(false);
 
   /**
-   * Handle onboarding completion
+   * Handle onboarding completion - immediately mark app as ready
    */
   const handleOnboardingComplete = () => {
-    refresh(); // Refresh setup status
-    setAppReady(true); // Mark app as ready
+    setAppReady(true); // Mark app as ready immediately - no waiting for refresh
   };
 
   /**
@@ -52,6 +52,44 @@ export function GitHubDatabaseWrapper({
   };
 
   /**
+   * Silent background check - verify repo exists before showing UI
+   */
+  useEffect(() => {
+    if (!userId || silentCheckDone || status !== "authenticated") {
+      return;
+    }
+
+    // If already marked as complete, skip check
+    if (setupStatus.hasGitKey && setupStatus.setupCompleted) {
+      setSilentCheckDone(true);
+      setAppReady(true);
+      return;
+    }
+
+    // Do silent background check
+    const checkRepo = async () => {
+      try {
+        const { validateGitHubRepoAction } = await import(
+          "@/lib/diffdb/actions"
+        );
+        const result = await validateGitHubRepoAction();
+
+        if (result.success && result.data?.repositoryExists) {
+          // Repo exists! Mark as complete and skip onboarding
+          markAsCompleted(result.data.repositoryName || "luminar-ai-data");
+          setAppReady(true);
+        }
+      } catch (error) {
+        console.log("Silent repo check failed, will show onboarding:", error);
+      } finally {
+        setSilentCheckDone(true);
+      }
+    };
+
+    checkRepo();
+  }, [userId, status, silentCheckDone, setupStatus, markAsCompleted]);
+
+  /**
    * Check if app should be ready
    */
   useEffect(() => {
@@ -60,8 +98,8 @@ export function GitHubDatabaseWrapper({
       return;
     }
 
-    if (status === "loading" || onboardingLoading) {
-      return; // Still loading
+    if (status === "loading" || onboardingLoading || !silentCheckDone) {
+      return; // Still loading or checking
     }
 
     if (status === "unauthenticated") {
@@ -77,19 +115,17 @@ export function GitHubDatabaseWrapper({
     if (setupStatus.hasGitKey && setupStatus.setupCompleted) {
       setAppReady(true);
     }
-  }, [status, userId, setupStatus, onboardingLoading]);
+  }, [status, userId, setupStatus, onboardingLoading, silentCheckDone]);
 
   /**
-   * Loading state
+   * Loading state - only show during initial authentication, not on every refresh
    */
-  if (status === "loading" || onboardingLoading) {
+  if (status === "loading" && !silentCheckDone) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
           <Loader2 className="w-8 h-8 animate-spin mx-auto text-blue-500" />
-          <p className="text-muted-foreground">
-            Loading your GitHub database...
-          </p>
+          <p className="text-muted-foreground">Authenticating...</p>
         </div>
       </div>
     );
@@ -121,31 +157,15 @@ export function GitHubDatabaseWrapper({
   }
 
   /**
-   * Show onboarding if needed
+   * Show onboarding if needed (only after silent check completes)
    */
-  if (shouldShowOnboarding && userId) {
+  if (shouldShowOnboarding && userId && silentCheckDone) {
     return (
-      <>
-        <GitHubOnboardingModal
-          userId={userId}
-          onComplete={handleOnboardingComplete}
-          onError={handleOnboardingError}
-        />
-
-        {/* Show a minimal loading state behind the modal */}
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto">
-              <span className="text-blue-500 text-2xl">🚀</span>
-            </div>
-            <h1 className="text-2xl font-bold">Welcome to Luminar AI</h1>
-            <p className="text-muted-foreground max-w-md">
-              Setting up your personal GitHub database for secure data
-              storage...
-            </p>
-          </div>
-        </div>
-      </>
+      <GitHubOnboardingModal
+        userId={userId}
+        onComplete={handleOnboardingComplete}
+        onError={handleOnboardingError}
+      />
     );
   }
 

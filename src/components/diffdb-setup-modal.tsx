@@ -38,45 +38,21 @@ interface GitHubOnboardingModalProps {
 }
 
 type SetupStep =
-  | "checking"
-  | "authenticating"
   | "verifying-permissions"
-  | "creating-repository"
-  | "initializing-structure"
   | "validating-setup"
   | "completed"
   | "error";
 
 const SETUP_STEPS = [
   {
-    key: "checking",
-    label: "Checking GitHub authentication",
-    description: "Verifying your GitHub credentials...",
-  },
-  {
-    key: "authenticating",
-    label: "Authenticating with GitHub",
-    description: "Connecting to your GitHub account...",
-  },
-  {
     key: "verifying-permissions",
-    label: "Verifying repository permissions",
-    description: "Checking repository access rights...",
-  },
-  {
-    key: "creating-repository",
-    label: "Creating your database repository",
-    description: "Setting up your personal data storage...",
-  },
-  {
-    key: "initializing-structure",
-    label: "Initializing database structure",
-    description: "Creating folders and schema files...",
+    label: "Verifying GitHub permissions",
+    description: "Checking your GitHub repository access...",
   },
   {
     key: "validating-setup",
-    label: "Validating setup",
-    description: "Testing repository access and structure...",
+    label: "Validating repository",
+    description: "Verifying database structure...",
   },
   {
     key: "completed",
@@ -93,7 +69,9 @@ export function GitHubOnboardingModal({
 }: GitHubOnboardingModalProps) {
   const { status, markAsCompleted, markAsIncomplete } =
     useGitHubSetupStatus(userId);
-  const [currentStep, setCurrentStep] = useState<SetupStep>("checking");
+  const [currentStep, setCurrentStep] = useState<SetupStep>(
+    "verifying-permissions",
+  );
   const [error, setError] = useState<string>();
   const [isProcessing, setIsProcessing] = useState(false);
   const [repositoryUrl, setRepositoryUrl] = useState<string>();
@@ -111,14 +89,7 @@ export function GitHubOnboardingModal({
     setRetryCount((prev) => prev + 1);
 
     try {
-      // Step 1: Check authentication
-      setCurrentStep("checking");
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setCurrentStep("authenticating");
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Step 2: Initialize DiffDB (this creates repo if needed)
+      // Step 1: Verify authentication and permissions
       setCurrentStep("verifying-permissions");
       const initResult = await initializeDiffDBAction();
 
@@ -128,15 +99,7 @@ export function GitHubOnboardingModal({
         );
       }
 
-      // Step 3: Create/verify repository
-      setCurrentStep("creating-repository");
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Step 4: Initialize structure
-      setCurrentStep("initializing-structure");
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Step 5: Validate setup
+      // Step 2: Validate repository structure
       setCurrentStep("validating-setup");
       const validateResult = await validateGitHubRepoAction();
 
@@ -152,10 +115,8 @@ export function GitHubOnboardingModal({
       const repoName = initResult.data?.repository?.name || "luminar-ai-data";
       markAsCompleted(repoName);
 
-      // Wait a moment to show success, then complete
-      setTimeout(() => {
-        onComplete?.();
-      }, 2000);
+      // Complete immediately - no fake delays
+      onComplete?.();
     } catch (err: any) {
       setCurrentStep("error");
       const errorMessage = err.message || "Setup failed";
@@ -171,11 +132,13 @@ export function GitHubOnboardingModal({
    * Start setup when modal opens
    */
   useEffect(() => {
-    if (shouldShow && !isProcessing && currentStep === "checking") {
-      // Small delay to show the modal first
-      setTimeout(() => {
-        runSetup();
-      }, 500);
+    if (
+      shouldShow &&
+      !isProcessing &&
+      currentStep === "verifying-permissions"
+    ) {
+      // Start immediately, no delays
+      runSetup();
     }
   }, [shouldShow]);
 
