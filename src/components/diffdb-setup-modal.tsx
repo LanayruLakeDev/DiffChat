@@ -174,13 +174,13 @@ export function GitHubOnboardingModal({
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <DialogHeader className="text-center">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-4">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center mb-4">
             {currentStep === "error" ? (
-              <XCircle className="w-8 h-8 text-white" />
+              <XCircle className="w-8 h-8 text-primary-foreground" />
             ) : currentStep === "completed" ? (
-              <CheckCircle className="w-8 h-8 text-white" />
+              <CheckCircle className="w-8 h-8 text-primary-foreground" />
             ) : (
-              <Github className="w-8 h-8 text-white" />
+              <Github className="w-8 h-8 text-primary-foreground" />
             )}
           </div>
 
@@ -217,14 +217,14 @@ export function GitHubOnboardingModal({
               </div>
 
               {/* Current Step */}
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+              <div className="bg-accent rounded-lg p-4 border border-border">
                 <div className="flex items-center space-x-3">
-                  <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
                   <div>
-                    <p className="font-medium text-blue-900 dark:text-blue-100">
+                    <p className="font-medium text-accent-foreground">
                       {currentStepInfo.label}
                     </p>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                    <p className="text-sm text-muted-foreground">
                       {currentStepInfo.description}
                     </p>
                   </div>
@@ -236,12 +236,12 @@ export function GitHubOnboardingModal({
           {/* Success State */}
           {currentStep === "completed" && (
             <div className="text-center space-y-4">
-              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-6">
-                <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-                <h3 className="font-semibold text-green-900 dark:text-green-100 mb-2">
+              <div className="bg-accent rounded-lg p-6 border border-border">
+                <CheckCircle className="w-12 h-12 text-primary mx-auto mb-4" />
+                <h3 className="font-semibold text-accent-foreground mb-2">
                   🎉 Database Created Successfully!
                 </h3>
-                <div className="text-sm text-green-700 dark:text-green-300 space-y-2">
+                <div className="text-sm text-muted-foreground space-y-2">
                   {repositoryUrl && (
                     <p>
                       <strong>Repository:</strong>{" "}
@@ -266,18 +266,16 @@ export function GitHubOnboardingModal({
           {/* Error State */}
           {currentStep === "error" && (
             <div className="space-y-4">
-              <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
+              <div className="bg-destructive/10 rounded-lg p-4 border border-destructive/20">
                 <div className="flex items-start space-x-3">
-                  <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                  <AlertTriangle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="font-medium text-red-900 dark:text-red-100 mb-1">
+                    <p className="font-medium text-destructive-foreground mb-1">
                       Setup Failed
                     </p>
-                    <p className="text-sm text-red-700 dark:text-red-300">
-                      {error}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{error}</p>
                     {retryCount > 1 && (
-                      <p className="text-xs text-red-600 dark:text-red-400 mt-2">
+                      <p className="text-xs text-muted-foreground mt-2">
                         Attempt {retryCount} of 3
                       </p>
                     )}
