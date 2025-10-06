@@ -121,13 +121,29 @@ export function createDiffDBAgentRepository(
     },
 
     async upsertAgent(
-      agent: Omit<Agent, "id" | "createdAt" | "updatedAt"> | Agent,
+      agent: any, // Accept any format from frontend
     ): Promise<Agent> {
       const isUpdate = "id" in agent && agent.id;
       const id = isUpdate
         ? agent.id
         : `agent_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const now = new Date().toISOString();
+
+      // Transform frontend format to DiffDB format
+      const transformedAgent: any = {
+        id,
+        userId: agent.userId,
+        name: agent.name,
+        description: agent.description || "",
+        systemPrompt:
+          agent.instructions?.systemPrompt || agent.systemPrompt || "",
+        isPublic: agent.isPublic ?? false,
+        tags: agent.tags || [],
+        avatar: agent.icon?.value || agent.avatar || "",
+        model: agent.model,
+        temperature: agent.temperature,
+        maxTokens: agent.maxTokens,
+      };
 
       let savedAgent: Agent;
 
@@ -139,15 +155,14 @@ export function createDiffDBAgentRepository(
 
         savedAgent = {
           ...existing,
-          ...agent,
+          ...transformedAgent,
           id: existing.id,
           createdAt: existing.createdAt,
           updatedAt: now,
         };
       } else {
         savedAgent = {
-          id,
-          ...agent,
+          ...transformedAgent,
           createdAt: now,
           updatedAt: now,
         };
