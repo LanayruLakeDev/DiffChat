@@ -121,7 +121,7 @@ export function createDiffDBAgentRepository(
     },
 
     async upsertAgent(
-      agent: any, // Accept any format from frontend
+      agent: Omit<Agent, "id" | "createdAt" | "updatedAt"> | Agent,
     ): Promise<Agent> {
       const isUpdate = "id" in agent && agent.id;
       const id = isUpdate
@@ -130,27 +130,31 @@ export function createDiffDBAgentRepository(
       const now = new Date().toISOString();
 
       // Transform frontend format to DiffDB format
-      const transformedAgent: any = {
-        id,
-        userId: agent.userId,
-        name: agent.name,
-        description: agent.description || "",
-        systemPrompt:
-          agent.instructions?.systemPrompt || agent.systemPrompt || "",
-        isPublic: agent.isPublic ?? false,
-        tags: agent.tags || [],
-        avatar: agent.icon?.value || agent.avatar || "",
-        model: agent.model,
-        temperature: agent.temperature,
-        maxTokens: agent.maxTokens,
-      };
+      const transformedAgent: any = { ...agent };
+
+      // Handle nested instructions.systemPrompt -> systemPrompt
+      if ((agent as any).instructions?.systemPrompt && !agent.systemPrompt) {
+        transformedAgent.systemPrompt = (
+          agent as any
+        ).instructions.systemPrompt;
+        delete transformedAgent.instructions;
+      }
+
+      // Handle icon.value -> avatar
+      if ((agent as any).icon?.value && !agent.avatar) {
+        transformedAgent.avatar = (agent as any).icon.value;
+        delete transformedAgent.icon;
+      }
 
       let savedAgent: Agent;
 
       if (isUpdate) {
-        const existing = await this.selectAgentById(agent.id, agent.userId);
+        const existing = await this.selectAgentById(
+          transformedAgent.id,
+          transformedAgent.userId,
+        );
         if (!existing) {
-          throw new Error(`Agent with ID ${agent.id} not found`);
+          throw new Error(`Agent with ID ${transformedAgent.id} not found`);
         }
 
         savedAgent = {
@@ -162,6 +166,7 @@ export function createDiffDBAgentRepository(
         };
       } else {
         savedAgent = {
+          id,
           ...transformedAgent,
           createdAt: now,
           updatedAt: now,
