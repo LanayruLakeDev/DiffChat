@@ -12,6 +12,12 @@ export interface Agent {
   name: string;
   description?: string;
   systemPrompt: string;
+  role?: string;
+  mentions?: Array<{
+    type: string;
+    value: string;
+    [key: string]: any;
+  }>;
   model?: string;
   temperature?: number;
   maxTokens?: number;
@@ -38,7 +44,8 @@ export function createDiffDBAgentRepository(
         const agent = JSON.parse(fileInfo.content);
         // Check access: user owns it or it's public
         if (agent.userId === userId || agent.isPublic) {
-          return agent;
+          // Transform DiffDB format back to frontend format
+          return this.transformToFrontend(agent);
         }
 
         return null;
@@ -46,6 +53,34 @@ export function createDiffDBAgentRepository(
         console.error(`Failed to get agent ${id}:`, error);
         return null;
       }
+    },
+
+    // Helper to transform DiffDB format to frontend format
+    transformToFrontend(agent: any): any {
+      const transformed = { ...agent };
+
+      // Create nested instructions object if we have the flat fields
+      if (agent.systemPrompt || agent.role || agent.mentions) {
+        transformed.instructions = {
+          systemPrompt: agent.systemPrompt,
+          role: agent.role,
+          mentions: agent.mentions,
+        };
+        delete transformed.systemPrompt;
+        delete transformed.role;
+        delete transformed.mentions;
+      }
+
+      // Create nested icon object if we have avatar
+      if (agent.avatar) {
+        transformed.icon = {
+          type: "emoji" as const,
+          value: agent.avatar,
+        };
+        delete transformed.avatar;
+      }
+
+      return transformed;
     },
 
     async selectAgentsByUserId(userId: string): Promise<Agent[]> {
@@ -60,7 +95,7 @@ export function createDiffDBAgentRepository(
               if (fileInfo) {
                 const agent = JSON.parse(fileInfo.content);
                 if (agent.userId === userId) {
-                  agents.push(agent);
+                  agents.push(this.transformToFrontend(agent));
                 }
               }
             } catch (error) {
@@ -91,7 +126,7 @@ export function createDiffDBAgentRepository(
               if (fileInfo) {
                 const agent = JSON.parse(fileInfo.content);
                 if (agent.isPublic) {
-                  publicAgents.push(agent);
+                  publicAgents.push(this.transformToFrontend(agent));
                 }
               }
             } catch (error) {
@@ -113,6 +148,7 @@ export function createDiffDBAgentRepository(
     async selectPublicAgentById(id: string): Promise<Agent | null> {
       try {
         const agent = await this.selectAgentById(id, ""); // Empty userId since we only want public
+        // Already transformed by selectAgentById
         return agent && agent.isPublic ? agent : null;
       } catch (error) {
         console.error(`Failed to get public agent ${id}:`, error);
@@ -132,11 +168,26 @@ export function createDiffDBAgentRepository(
       // Transform frontend format to DiffDB format
       const transformedAgent: any = { ...agent };
 
-      // Handle nested instructions.systemPrompt -> systemPrompt
-      if ((agent as any).instructions?.systemPrompt && !agent.systemPrompt) {
-        transformedAgent.systemPrompt = (
-          agent as any
-        ).instructions.systemPrompt;
+      // Handle nested instructions -> flat structure
+      if ((agent as any).instructions) {
+        const instructions = (agent as any).instructions;
+
+        // Extract systemPrompt
+        if (instructions.systemPrompt && !agent.systemPrompt) {
+          transformedAgent.systemPrompt = instructions.systemPrompt;
+        }
+
+        // Extract role
+        if (instructions.role && !transformedAgent.role) {
+          transformedAgent.role = instructions.role;
+        }
+
+        // Extract mentions (MCP tools access)
+        if (instructions.mentions && !transformedAgent.mentions) {
+          transformedAgent.mentions = instructions.mentions;
+        }
+
+        // Remove nested instructions object
         delete transformedAgent.instructions;
       }
 
@@ -242,7 +293,9 @@ export function createDiffDBAgentRepository(
             try {
               const fileInfo = await client.readFile(repositoryName, file.path);
               if (fileInfo) {
-                agents.push(JSON.parse(fileInfo.content));
+                agents.push(
+                  this.transformToFrontend(JSON.parse(fileInfo.content)),
+                );
               }
             } catch (error) {
               console.error(`Failed to read agent file ${file.path}:`, error);
