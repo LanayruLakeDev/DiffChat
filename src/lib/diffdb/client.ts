@@ -123,8 +123,7 @@ export class DiffDBClient {
         name: repoName,
         private: true,
         description:
-          description ||
-          `DiffDB Data Storage - ${new Date().toISOString()}`,
+          description || `DiffDB Data Storage - ${new Date().toISOString()}`,
         auto_init: false, // Don't auto-create README - we'll create our own structure
       });
 
