@@ -68,7 +68,7 @@ class DiffDBService {
   }
 
   private async performSetup(config: DiffDBConfig): Promise<DiffDBUserSetup> {
-    const repoName = config.repositoryName || "luminar-ai-data";
+    const repoName = config.repositoryName || "diffchat-data";
 
     this.client = new DiffDBClient(config.accessToken!);
     this.manager = new DiffDBManager(config.accessToken!, repoName);

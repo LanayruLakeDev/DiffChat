@@ -89,7 +89,7 @@ async function getUserRepositories() {
     const diffdbClient = new DiffDBClient(accessToken);
     await diffdbClient.initialize(); // Initialize with user info
 
-    const repoName = process.env.DIFFDB_REPOSITORY_NAME || "luminar-ai-data";
+    const repoName = process.env.DIFFDB_REPOSITORY_NAME || "diffchat-data";
 
     // Create all repository instances
     const repositories = {

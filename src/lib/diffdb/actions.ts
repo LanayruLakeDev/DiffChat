@@ -191,7 +191,7 @@ export async function validateGitHubRepoAction() {
       const client = new DiffDBClient(githubAuth.accessToken);
       await client.initialize();
 
-      const repoName = process.env.DIFFDB_REPOSITORY_NAME || "luminar-ai-data";
+      const repoName = process.env.DIFFDB_REPOSITORY_NAME || "diffchat-data";
 
       // Check if repository exists and has proper structure
       const repoExists = await client.repositoryExists(repoName);

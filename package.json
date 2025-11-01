@@ -1,8 +1,8 @@
 {
-  "name": "luminar-ai",
+  "name": "diffchat",
   "version": "1.19.1",
   "private": true,
-  "author": "cgoinglove",
+  "author": "Ahmed Ben Abdallah Dev",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -136,7 +136,10 @@
     "vitest": "^3.2.4"
   },
   "lint-staged": {
-    "*.{js,json,mjs,ts,yaml,tsx,css}": ["pnpm format", "pnpm lint:fix"]
+    "*.{js,json,mjs,ts,yaml,tsx,css}": [
+      "pnpm format",
+      "pnpm lint:fix"
+    ]
   },
   "packageManager": "pnpm@10.2.1",
   "engines": {

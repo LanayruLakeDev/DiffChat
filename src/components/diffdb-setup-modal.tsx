@@ -113,7 +113,7 @@ export function GitHubOnboardingModal({
       setRepositoryUrl(initResult.data?.repository?.html_url);
 
       // Mark as completed in local storage
-      const repoName = initResult.data?.repository?.name || "luminar-ai-data";
+      const repoName = initResult.data?.repository?.name || "diffchat-data";
       markAsCompleted(repoName);
 
       // Close modal immediately and notify parent

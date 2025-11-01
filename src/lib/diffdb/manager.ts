@@ -30,7 +30,7 @@ export class DiffDBManager {
   private userInfo: GitHubUserInfo | null = null;
   private repositoryInfo: DiffDBRepositoryInfo | null = null;
 
-  constructor(accessToken: string, repoName: string = "luminar-ai-data") {
+  constructor(accessToken: string, repoName: string = "diffchat-data") {
     this.client = new DiffDBClient(accessToken);
     this.repoName = repoName;
   }
@@ -87,7 +87,7 @@ export class DiffDBManager {
         );
         this.repositoryInfo = await this.client.createRepository(
           this.repoName,
-          `Personal Luminar AI database for ${this.userInfo.login}`,
+          `Personal DiffChat database for ${this.userInfo.login}`,
         );
         updateProgress("repo-create", "Database repository created");
 
@@ -195,7 +195,7 @@ export class DiffDBManager {
         const keepFile = `${dir}/.gitkeep`;
         const exists = await this.client.readFile(this.repoName, keepFile);
         if (!exists) {
-          const keepContent = `# ${dir.charAt(0).toUpperCase() + dir.slice(1)} directory\n\nThis directory stores ${dir.replace("_", " ")} data for Luminar AI.\n`;
+          const keepContent = `# ${dir.charAt(0).toUpperCase() + dir.slice(1)} directory\n\nThis directory stores ${dir.replace("_", " ")} data for DiffChat.\n`;
           await this.client.writeFile(
             this.repoName,
             keepFile,

@@ -82,7 +82,7 @@ export function GitHubDatabaseWrapper({
 
         if (result.success && result.data?.repositoryExists) {
           // Repo exists! Mark as complete and skip onboarding
-          const repoName = result.data.repositoryName || "luminar-ai-data";
+          const repoName = result.data.repositoryName || "diffchat-data";
           markAsCompleted(repoName);
           setAppReady(true); // Set BEFORE marking done to ensure app loads
           setSilentCheckDone(true);
