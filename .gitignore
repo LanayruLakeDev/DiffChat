@@ -49,6 +49,9 @@ next-env.d.ts
 
 local-data
 
+# private documentation
+/private-docs
+
 .cursorrules
 .cursor
 *.ignore
