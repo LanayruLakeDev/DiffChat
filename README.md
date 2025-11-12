@@ -1,25 +1,31 @@
+# DiffChat
+
 <img width="1647" alt="thumbnail" loading="lazy" src="https://github.com/user-attachments/assets/7b0f279a-8771-42a0-b8b6-128b3b1a076c" />
 
 [![MCP Supported](https://img.shields.io/badge/MCP-Supported-00c853)](https://modelcontextprotocol.io/introduction)
+[![GitHub Integration](https://img.shields.io/badge/GitHub-Integrated-181717?logo=github)](https://github.com)
 [![Local First](https://img.shields.io/badge/Local-First-blue)](https://localfirstweb.dev/)
-[![Discord](https://img.shields.io/discord/1374047276074537103?label=Discord&logo=discord&color=5865F2)](https://discord.gg/gCRu69Upnp)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/cgoinglove/better-chatbot&env=BETTER_AUTH_SECRET&env=OPENAI_API_KEY&env=GOOGLE_GENERATIVE_AI_API_KEY&env=ANTHROPIC_API_KEY&envDescription=Learn+more+about+how+to+get+the+API+Keys+for+the+application&envLink=https://github.com/cgoinglove/better-chatbot/blob/main/.env.example&demo-title=better-chatbot&demo-description=An+Open-Source+Chatbot+Template+Built+With+Next.js+and+the+AI+SDK+by+Vercel.&products=[{"type":"integration","protocol":"storage","productSlug":"neon","integrationSlug":"neon"}])
+**DiffChat** is an AI-powered chat application that seamlessly integrates with GitHub to save and sync your conversations directly to your Git repositories. Experience the power of version-controlled chat history combined with modern AI capabilities.
 
-Our goal is to create the best possible chatbot UX — focusing on the joy and intuitiveness users feel when calling and interacting with AI tools.
+## 🌟 What Makes DiffChat Different?
 
+DiffChat takes the concept of a chat application to the next level by:
 
-See the experience in action in the [preview](#preview) below!
+- **🔗 GitHub Integration**: Connect directly to your GitHub account and save all chat data to your Git repositories
+- **📦 Git-Based Storage**: Your conversations, workflows, and chat history are stored as version-controlled data in your chosen Git repo
+- **🔄 Automatic Syncing**: Every chat is automatically committed and synced to your repository, ensuring you never lose your conversation history
+- **🌐 Distributed Data**: Your data lives in your GitHub repository, giving you full ownership and control
 
-> Built with [Vercel AI SDK](https://sdk.vercel.ai) and [Next.js](https://nextjs.org/), this app adopts modern patterns for building AI chat interfaces. It leverages the power of the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) to seamlessly integrate external tools into your chat experience. You can also create custom workflows that become callable tools in chat, allowing you to chain multiple MCP tools, LLM interactions, and logic into powerful automated sequences.
+> Built with [Vercel AI SDK](https://sdk.vercel.ai) and [Next.js](https://nextjs.org/), DiffChat combines modern AI chat patterns with Git-based persistence. It leverages the power of the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) to seamlessly integrate external tools into your chat experience. You can also create custom workflows that become callable tools in chat, allowing you to chain multiple MCP tools, LLM interactions, and logic into powerful automated sequences.
 
 ### Quick Start 🚀
 
 ```bash
 # 1. Clone the repository
 
-git clone https://github.com/cgoinglove/better-chatbot.git
-cd better-chatbot
+git clone https://github.com/LanayruLakeDev/DiffChat.git
+cd DiffChat
 
 # 2. (Optional) Install pnpm if you don't have it
 
@@ -296,7 +302,7 @@ NOT_ALLOW_ADD_MCP_SERVERS=
 
 ## 📘 Guides
 
-Step-by-step setup guides for running and configuring better-chatbot.
+Step-by-step setup guides for running and configuring DiffChat.
 
 #### [🔌 MCP Server Setup & Tool Testing](./docs/tips-guides/mcp-server-setup-and-tool-testing.md)
 
@@ -337,29 +343,30 @@ Advanced use cases and extra capabilities that enhance your chatbot experience.
 
 ## 🗺️ Roadmap
 
-Planned features coming soon to better-chatbot:
+Planned features coming soon to DiffChat:
 
+- [ ] **Enhanced GitHub Sync**: Real-time collaboration with repository watchers
 - [ ] **File Attach & Image Generation**
 - [ ] **Collaborative Document Editing** (like OpenAI Canvas: user & assistant co-editing)
 - [ ] **RAG (Retrieval-Augmented Generation)**
 - [ ] **Web-based Compute** (with [WebContainers](https://webcontainers.io) integration)
+- [ ] **Branch-based Chat History**: Organize conversations across different Git branches
 
-💡 If you have suggestions or need specific features, please create an [issue](https://github.com/cgoinglove/better-chatbot/issues)!
+💡 If you have suggestions or need specific features, please create an [issue](https://github.com/LanayruLakeDev/DiffChat/issues)!
 
-## 🙌 Contributing
+---
 
-We welcome all contributions! Bug reports, feature ideas, code improvements — everything helps us build the best local AI assistant.
+## 🙏 Acknowledgments
 
-> **⚠️ Please read our [Contributing Guide](./CONTRIBUTING.md) before submitting any Pull Requests or Issues.** This helps us work together more effectively and saves time for everyone.
+**DiffChat is majorly based on the incredible work of [cgoinglove's better-chatbot](https://github.com/cgoinglove/better-chatbot).**
 
-**For detailed contribution guidelines**, please see our [Contributing Guide](./CONTRIBUTING.md).
+Special thanks to **@cgoinglove** for creating the foundational architecture and innovative features that made DiffChat possible. The better-chatbot project provided the excellent base for MCP integration, workflow systems, and modern AI chat patterns that DiffChat builds upon.
 
-**Language Translations:** Help us make the chatbot accessible to more users by adding new language translations. See [language.md](./messages/language.md) for instructions on how to contribute translations.
+We encourage you to check out the original [better-chatbot repository](https://github.com/cgoinglove/better-chatbot) and show your support! 🌟
 
-Let's build it together 🚀
+### Key Differences in DiffChat:
+- **GitHub-first approach**: Native Git repository integration for chat storage
+- **Version-controlled conversations**: Every chat saved as commits in your repo
+- **Distributed data ownership**: Your conversations live in your GitHub repositories
 
-## 💬 Join Our Discord
-
-[![Discord](https://img.shields.io/discord/1374047276074537103?label=Discord&logo=discord&color=5865F2)](https://discord.gg/gCRu69Upnp)
-
-Connect with the community, ask questions, and get support on our official Discord server!
+DiffChat extends the better-chatbot foundation with Git-based persistence while maintaining all the powerful features of the original project.
