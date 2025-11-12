@@ -8,6 +8,8 @@
 
 **DiffChat** is an AI-powered chat application that seamlessly integrates with GitHub to save and sync your conversations directly to your Git repositories. Experience the power of version-controlled chat history combined with modern AI capabilities.
 
+> 🚀 Latest update: Pushing our overhaul to the original DiffChat repository.
+
 ## 🌟 What Makes DiffChat Different?
 
 DiffChat takes the concept of a chat application to the next level by:
